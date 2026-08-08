@@ -1,0 +1,34 @@
+import type { ReviewsResult } from "@/lib/reviews/types";
+
+export function GoogleReviewsStructuredData({ summary, reviews }: ReviewsResult) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Dentist",
+    name: "Odonto Casais",
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: summary.averageRating,
+      reviewCount: summary.totalReviews,
+    },
+    review: reviews.slice(0, 10).map((review) => ({
+      "@type": "Review",
+      author: {
+        "@type": "Person",
+        name: review.authorName,
+      },
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: review.rating,
+        bestRating: 5,
+      },
+      reviewBody: review.text,
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}

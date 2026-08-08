@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+:root {
+  --background: #e1ddda;
+  --foreground: #18191c;
+  --muted: #525660;
+  --surface: #ffffff;
+  --surface-strong: #17181a;
+  --accent: #c5beba;
+  --accent-soft: #d6d1ce;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-surface: var(--surface);
+  --color-surface-strong: var(--surface-strong);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --font-sans: var(--font-plus-jakarta-sans);
+  --font-heading: var(--font-poppins);
+}
+
+@layer utilities {
+  .font-heading {
+    font-family: var(--font-poppins), sans-serif;
+  }
+
+  .animate-accordion-down {
+    animation: accordion-down 0.22s ease-out;
+  }
+
+  .animate-accordion-up {
+    animation: accordion-up 0.22s ease-out;
+  }
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--foreground);
+  background:
+    radial-gradient(circle at top left, rgba(197, 190, 186, 0.28), transparent 32%),
+    radial-gradient(circle at top right, rgba(24, 25, 28, 0.08), transparent 18%),
+    linear-gradient(180deg, #e1ddda 0%, #e8e5e2 45%, #dedad8 100%);
+  font-family: var(--font-plus-jakarta-sans), sans-serif;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(24, 25, 28, 0.03) 0.8px, transparent 0.8px);
+  background-size: 20px 20px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.2), transparent 70%);
+}
+
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+::selection {
+  background: rgba(197, 190, 186, 0.9);
+  color: #18191c;
+}
