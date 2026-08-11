@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  CirclePlay,
   Clock3,
   Eye,
   Globe,
@@ -21,7 +20,6 @@ import {
   Lightbulb,
   MapPinned,
   Menu,
-  Play,
   Scale,
   ScanFace,
   ShieldCheck,
@@ -441,10 +439,9 @@ function SectionHeading({ eyebrow, title, description, align = "left" }: { eyebr
 
 function FloatingWhatsApp() {
   return (
-    <Button asChild className="fixed bottom-5 right-5 z-50 rounded-full px-4 shadow-[0_18px_50px_rgba(23,24,26,0.24)]" size="lg">
+    <Button asChild className="fixed bottom-5 right-5 z-50 h-14 w-14 rounded-full p-0 shadow-[0_18px_50px_rgba(23,24,26,0.24)]" size="lg">
       <Link href={whatsappUrl} target="_blank" rel="noreferrer noopener" aria-label="Agendar avaliação via WhatsApp">
-        <Image src={whatsappIconImage} alt="" className="h-5 w-5 object-contain" />
-        WhatsApp
+        <Image src={whatsappIconImage} alt="" className="h-6 w-6 object-contain" />
       </Link>
     </Button>
   );
@@ -598,48 +595,6 @@ function SiteHeader({ scrolled, menuOpen, setMenuOpen }: { scrolled: boolean; me
         )}
       </AnimatePresence>
     </header>
-  );
-}
-
-function VideoPlaceholder() {
-  return (
-    <motion.div variants={sectionMotion} className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-      <div className="flex flex-col justify-between rounded-[32px] border border-[#18191c]/8 bg-[#17181a] p-6 text-white shadow-[0_24px_60px_rgba(23,24,26,0.16)] md:p-8">
-        <div>
-          <Badge variant="soft" className="border-white/10 bg-white/10 text-white/75">Vídeo institucional</Badge>
-          <h3 className="mt-5 font-heading text-3xl font-semibold">Um espaço elegante para apresentar o cuidado da clínica em movimento.</h3>
-          <p className="mt-4 max-w-xl text-base leading-8 text-white/72">
-            O player abaixo funciona como placeholder premium para um futuro vídeo do YouTube. A estrutura já foi pensada para receber conteúdo real sem alterar o layout.
-          </p>
-        </div>
-        <div className="mt-8 flex flex-wrap gap-3 text-sm text-white/75">
-          <span className="rounded-full border border-white/10 bg-white/6 px-4 py-2">Apresentação da clínica</span>
-          <span className="rounded-full border border-white/10 bg-white/6 px-4 py-2">Bastidores do atendimento</span>
-          <span className="rounded-full border border-white/10 bg-white/6 px-4 py-2">Depoimento do time</span>
-        </div>
-      </div>
-
-      <div className="rounded-[32px] border border-[#18191c]/8 bg-white p-4 shadow-[0_24px_60px_rgba(23,24,26,0.12)] md:p-5">
-        <div className="relative aspect-video overflow-hidden rounded-[26px] bg-[linear-gradient(135deg,#18191c_0%,#2d2f35_55%,#9d9188_100%)]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_25%,rgba(255,255,255,0.18),transparent_28%),radial-gradient(circle_at_75%_20%,rgba(255,255,255,0.16),transparent_20%),radial-gradient(circle_at_70%_75%,rgba(255,255,255,0.12),transparent_22%)]" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full border border-white/15 bg-white/12 backdrop-blur-md">
-              <Play className="ml-1 h-8 w-8 fill-current text-white" />
-            </div>
-            <p className="mt-5 text-lg font-semibold">Player do YouTube em posição de destaque</p>
-            <p className="mt-2 max-w-lg text-sm leading-6 text-white/75">
-              Insira aqui o link do vídeo institucional ou da apresentação da Odonto Casais quando o material final estiver pronto.
-            </p>
-            <Button asChild variant="secondary" className="mt-6">
-              <Link href="https://www.youtube.com" target="_blank" rel="noreferrer noopener">
-                Abrir canal futuro
-                <CirclePlay className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </motion.div>
   );
 }
 
@@ -1251,12 +1206,6 @@ export default function SiteHome({ reviewsData }: { reviewsData: ReviewsResult }
                 </motion.div>
               ))}
             </motion.div>
-          </div>
-        </section>
-
-        <section id="video" className="scroll-mt-28 px-6 py-20 md:px-8">
-          <div className="mx-auto max-w-7xl">
-            <VideoPlaceholder />
           </div>
         </section>
 
