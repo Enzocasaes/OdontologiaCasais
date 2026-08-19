@@ -7,27 +7,14 @@ import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer-motion";
 import {
   ArrowRight,
-  Award,
-  BadgeCheck,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Clock3,
-  Eye,
   Globe,
-  Heart,
   HeartHandshake,
-  Lightbulb,
   MapPinned,
   Menu,
-  Scale,
-  ScanFace,
-  ShieldCheck,
-  Sparkles,
   Star,
-  Smile,
-  Target,
-  UserCheck,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -43,7 +30,20 @@ import drChristianImage from "@/images/DrChristian.jpg";
 import drDeivsonImage from "@/images/DrDeivson.jpeg";
 import instagramIconImage from "@/images/instagram.png";
 import logoLockupImage from "@/images/logo-odontocasais-lockup.png";
+import acolhimentoIconImage from "@/images/acolhimento.png";
+import ambienteModernoIconImage from "@/images/ambienteModerno.png";
+import atendimentoHumanizadoIconImage from "@/images/atendimentoHumanizado.png";
+import compromissoIconImage from "@/images/compromisso.png";
+import cuidadoIconImage from "@/images/cuidado.png";
+import eticaIconImage from "@/images/etica.png";
+import excelenciaIconImage from "@/images/excelencia.png";
+import inovacaoIconImage from "@/images/inovacao.png";
 import mapsIconImage from "@/images/maps.png";
+import segurancaIconImage from "@/images/seguranca.png";
+import tecnologiaDePontaIconImage from "@/images/tecnologiadePonta.png";
+import nossaMissaoIconImage from "@/images/nossaMissao.png";
+import respeitoIconImage from "@/images/respeito.png";
+import visaoIconImage from "@/images/visao.png";
 import clockIconImage from "@/images/relogio.png";
 import whatsappIconImage from "@/images/wpp.png";
 import { createIllustration } from "@/lib/placeholders";
@@ -161,32 +161,32 @@ const differentials = [
   {
     title: "Atendimento humanizado",
     description: "Escuta ativa e acompanhamento próximo, com atenção genuína às necessidades de cada paciente.",
-    icon: BadgeCheck,
+    icon: atendimentoHumanizadoIconImage,
   },
   {
     title: "Tecnologia de ponta",
     description: "Equipamentos modernos e recursos avançados de diagnóstico para tratamentos mais precisos e seguros.",
-    icon: ScanFace,
+    icon: tecnologiaDePontaIconImage,
   },
   {
-    title: "Cuidado personalizado",
-    description: "Planejamento individual para cada caso, respeitando o ritmo e as expectativas de cada paciente.",
-    icon: Sparkles,
+    title: "Conforto em cada etapa",
+    description: "Um atendimento pensado para tornar sua experiência mais tranquila, segura e confortável.",
+    icon: cuidadoIconImage,
   },
   {
     title: "Tratamentos seguros",
     description: "Protocolos rigorosos de biossegurança e processos organizados em cada etapa do atendimento.",
-    icon: ShieldCheck,
+    icon: segurancaIconImage,
   },
   {
     title: "Ambiente moderno",
     description: "Espaços leves, silenciosos e acolhedores, pensados para reduzir ansiedade e elevar a experiência.",
-    icon: Clock3,
+    icon: ambienteModernoIconImage,
   },
   {
     title: "Busca por excelência",
     description: "Compromisso contínuo com atualização técnica e qualidade em cada etapa do tratamento.",
-    icon: Smile,
+    icon: excelenciaIconImage,
   },
 ] as const;
 
@@ -200,32 +200,32 @@ const values = [
   {
     title: "Respeito",
     description: "Valorizamos cada paciente e suas necessidades.",
-    icon: Heart,
+    icon: respeitoIconImage,
   },
   {
     title: "Ética",
     description: "Transparência e responsabilidade em cada atendimento.",
-    icon: Scale,
+    icon: eticaIconImage,
   },
   {
     title: "Acolhimento",
     description: "Um ambiente preparado para que todos se sintam confortáveis.",
-    icon: HeartHandshake,
+    icon: acolhimentoIconImage,
   },
   {
     title: "Inovação",
     description: "Investimos continuamente em tecnologia e atualização profissional.",
-    icon: Lightbulb,
+    icon: inovacaoIconImage,
   },
   {
     title: "Compromisso com a qualidade",
     description: "Excelência em cada etapa do tratamento.",
-    icon: Award,
+    icon: compromissoIconImage,
   },
   {
     title: "Cuidado individualizado",
     description: "Cada paciente recebe um plano de atendimento personalizado.",
-    icon: UserCheck,
+    icon: cuidadoIconImage,
   },
 ] as const;
 
@@ -320,6 +320,27 @@ const team = [
     image: drDeivsonImage,
   },
 ] as const;
+
+const videoTestimonials = [
+  {
+    name: "Paciente Odonto Casais",
+    treatment: "Implantes e Reabilitação Oral",
+    video: "/videos/depoimento-1.mp4",
+    poster: undefined as StaticImageData | undefined,
+  },
+  {
+    name: "Paciente Odonto Casais",
+    treatment: "Ortodontia",
+    video: "/videos/depoimento-2.mp4",
+    poster: undefined as StaticImageData | undefined,
+  },
+  {
+    name: "Paciente Odonto Casais",
+    treatment: "Estética Dental",
+    video: "/videos/depoimento-3.mp4",
+    poster: undefined as StaticImageData | undefined,
+  },
+];
 
 const stats = [
   { value: 12000, label: "pacientes atendidos" },
@@ -439,11 +460,15 @@ function SectionHeading({ eyebrow, title, description, align = "left" }: { eyebr
 
 function FloatingWhatsApp() {
   return (
-    <Button asChild className="fixed bottom-5 right-5 z-50 h-14 w-14 rounded-full p-0 shadow-[0_18px_50px_rgba(23,24,26,0.24)]" size="lg">
-      <Link href={whatsappUrl} target="_blank" rel="noreferrer noopener" aria-label="Agendar avaliação via WhatsApp">
-        <Image src={whatsappIconImage} alt="" className="h-6 w-6 object-contain" />
-      </Link>
-    </Button>
+    <Link
+      href={whatsappUrl}
+      target="_blank"
+      rel="noreferrer noopener"
+      aria-label="Agendar avaliação via WhatsApp"
+      className="fixed bottom-5 right-5 z-50 rounded-full transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#18191c]/50 focus-visible:ring-offset-2"
+    >
+      <Image src={whatsappIconImage} alt="" className="h-20 w-20 rounded-2xl object-contain" />
+    </Link>
   );
 }
 
@@ -697,10 +722,14 @@ function SocialLink({
       href={href}
       target="_blank"
       rel="noreferrer noopener"
-      className="flex h-11 w-11 items-center justify-center rounded-full border border-[#18191c]/10 bg-white text-[#18191c] transition hover:-translate-y-0.5 hover:bg-[#18191c] hover:text-white"
+      className={
+        "src" in Icon
+          ? "flex h-11 w-11 items-center justify-center transition hover:-translate-y-0.5"
+          : "flex h-11 w-11 items-center justify-center rounded-full border border-[#18191c]/10 bg-white text-[#18191c] transition hover:-translate-y-0.5 hover:bg-[#18191c] hover:text-white"
+      }
       aria-label={label}
     >
-      {"src" in Icon ? <Image src={Icon} alt="" className="h-5 w-5 object-contain" /> : <Icon className="h-4 w-4" />}
+      {"src" in Icon ? <Image src={Icon} alt="" className="h-9 w-9 object-contain" /> : <Icon className="h-4 w-4" />}
     </a>
   );
 }
@@ -722,9 +751,9 @@ function TeamPortrait({ name, role, cro, graduationLabel, graduationYear, yearsO
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <Card className="group h-full overflow-hidden border-[#18191c]/8 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(23,24,26,0.12)]">
-      <div className="flex h-full flex-col sm:flex-row">
-        <div className="p-4 sm:w-[38%] sm:shrink-0">
+    <Card className="group overflow-hidden border-[#18191c]/8 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(23,24,26,0.12)]">
+      <div className="flex flex-col sm:flex-row">
+        <div className="p-4 sm:w-[38%] sm:shrink-0 sm:self-start">
           <Image src={image} alt={name} width={500} height={625} className="aspect-[4/5] w-full rounded-[20px] object-cover" />
         </div>
         <div className="flex flex-1 flex-col justify-center gap-3 p-5 pt-1 sm:pt-5 sm:pl-0">
@@ -752,6 +781,31 @@ function TeamPortrait({ name, role, cro, graduationLabel, graduationYear, yearsO
         </div>
       </div>
     </Card>
+  );
+}
+
+function VideoTestimonialCard({ item }: { item: (typeof videoTestimonials)[number] }) {
+  return (
+    <motion.div variants={sectionMotion} whileHover={{ y: -6 }} transition={{ duration: 0.2 }}>
+      <Card className="h-full overflow-hidden border-[#18191c]/8 bg-white transition-all duration-300 hover:shadow-[0_20px_50px_rgba(23,24,26,0.12)]">
+        <div className="relative aspect-[9/16] w-full overflow-hidden bg-[#18191c] sm:aspect-video">
+          <video
+            src={item.video}
+            poster={item.poster?.src}
+            controls
+            preload="none"
+            playsInline
+            className="h-full w-full object-cover"
+          >
+            Seu navegador não suporta vídeos.
+          </video>
+        </div>
+        <CardHeader>
+          <CardTitle className="text-base">{item.name}</CardTitle>
+          <p className="text-xs uppercase tracking-[0.18em] text-[#81756c]">{item.treatment}</p>
+        </CardHeader>
+      </Card>
+    </motion.div>
   );
 }
 
@@ -819,7 +873,7 @@ function FeaturedTreatmentCard({ item }: { item: typeof featuredTreatment }) {
               <Button asChild size="lg" className="mt-5 h-auto w-full whitespace-normal py-3.5 text-center sm:w-auto">
                 <Link href={whatsappUrl} target="_blank" rel="noreferrer noopener">
                   Agendar minha avaliação pelo WhatsApp
-                  <Image src={whatsappIconImage} alt="" className="h-4 w-4 shrink-0 object-contain" />
+                  <Image src={whatsappIconImage} alt="" className="h-6 w-6 shrink-0 object-contain" />
                 </Link>
               </Button>
             </div>
@@ -1002,8 +1056,8 @@ export default function SiteHome({ reviewsData }: { reviewsData: ReviewsResult }
             >
               <motion.div variants={sectionMotion} whileHover={{ y: -4 }} transition={{ duration: 0.25 }}>
                 <Card className="flex h-full flex-col justify-center gap-6 border-[#18191c]/8 bg-white p-10 shadow-[0_26px_70px_rgba(23,24,26,0.12)] md:p-14">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#18191c] text-white shadow-[0_12px_30px_rgba(23,24,26,0.2)]">
-                    <Target className="h-6 w-6" />
+                  <div className="flex h-20 w-20 items-center justify-center">
+                    <Image src={nossaMissaoIconImage} alt="" className="h-20 w-20 object-contain" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#81756c]">Nossa Missão</p>
@@ -1016,8 +1070,8 @@ export default function SiteHome({ reviewsData }: { reviewsData: ReviewsResult }
 
               <motion.div variants={sectionMotion} whileHover={{ y: -4 }} transition={{ duration: 0.25 }}>
                 <Card className="flex h-full flex-col gap-4 border-[#18191c]/8 bg-[#ddd9d5] p-8 shadow-[0_18px_50px_rgba(23,24,26,0.08)] md:p-10">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#18191c] shadow-[0_10px_24px_rgba(23,24,26,0.1)]">
-                    <Eye className="h-5 w-5" />
+                  <div className="flex h-16 w-16 items-center justify-center">
+                    <Image src={visaoIconImage} alt="" className="h-14 w-14 object-contain" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#81756c]">Nossa Visão</p>
@@ -1034,25 +1088,22 @@ export default function SiteHome({ reviewsData }: { reviewsData: ReviewsResult }
               viewport={{ once: true, margin: "-10% 0px" }}
               className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
             >
-              {values.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <motion.div
-                    key={item.title}
-                    variants={sectionMotion}
-                    whileHover={{ y: -4, scale: 1.02 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Card className="h-full border-[#18191c]/8 bg-white/95 p-6 shadow-[0_14px_40px_rgba(23,24,26,0.06)] transition-shadow duration-300 hover:shadow-[0_20px_50px_rgba(23,24,26,0.12)]">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#ccc6c2] text-[#18191c]">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <p className="mt-4 text-base font-semibold text-[#18191c]">{item.title}</p>
-                      <p className="mt-1 text-sm leading-6 text-[#4f535b]">{item.description}</p>
-                    </Card>
-                  </motion.div>
-                );
-              })}
+              {values.map((item) => (
+                <motion.div
+                  key={item.title}
+                  variants={sectionMotion}
+                  whileHover={{ y: -4, scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Card className="h-full border-[#18191c]/8 bg-white/95 p-6 shadow-[0_14px_40px_rgba(23,24,26,0.06)] transition-shadow duration-300 hover:shadow-[0_20px_50px_rgba(23,24,26,0.12)]">
+                    <div className="flex h-16 w-16 items-center justify-center">
+                      <Image src={item.icon} alt="" className="h-14 w-14 object-contain" />
+                    </div>
+                    <p className="mt-4 text-base font-semibold text-[#18191c]">{item.title}</p>
+                    <p className="mt-1 text-sm leading-6 text-[#4f535b]">{item.description}</p>
+                  </Card>
+                </motion.div>
+              ))}
             </motion.div>
           </div>
         </section>
@@ -1066,22 +1117,19 @@ export default function SiteHome({ reviewsData }: { reviewsData: ReviewsResult }
               align="center"
             />
             <motion.div variants={staggerMotion} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-10% 0px" }} className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {differentials.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <motion.div key={item.title} variants={sectionMotion} whileHover={{ y: -6 }} transition={{ duration: 0.2 }}>
-                    <Card className="h-full border-[#18191c]/8 bg-white/96 transition-all duration-300 hover:shadow-[0_18px_50px_rgba(23,24,26,0.12)]">
-                      <CardHeader>
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ccc6c2] text-[#18191c] shadow-inner">
-                          <Icon className="h-5 w-5" />
-                        </div>
-                        <CardTitle className="mt-4">{item.title}</CardTitle>
-                        <CardDescription>{item.description}</CardDescription>
-                      </CardHeader>
-                    </Card>
-                  </motion.div>
-                );
-              })}
+              {differentials.map((item) => (
+                <motion.div key={item.title} variants={sectionMotion} whileHover={{ y: -6 }} transition={{ duration: 0.2 }}>
+                  <Card className="h-full border-[#18191c]/8 bg-white/96 transition-all duration-300 hover:shadow-[0_18px_50px_rgba(23,24,26,0.12)]">
+                    <CardHeader>
+                      <div className="flex h-16 w-16 items-center justify-center">
+                        <Image src={item.icon} alt="" className="h-14 w-14 object-contain" />
+                      </div>
+                      <CardTitle className="mt-4">{item.title}</CardTitle>
+                      <CardDescription>{item.description}</CardDescription>
+                    </CardHeader>
+                  </Card>
+                </motion.div>
+              ))}
             </motion.div>
           </div>
         </section>
@@ -1198,10 +1246,10 @@ export default function SiteHome({ reviewsData }: { reviewsData: ReviewsResult }
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-10% 0px" }}
-              className="mx-auto mt-8 grid max-w-5xl grid-cols-1 items-stretch gap-5 md:grid-cols-2"
+              className="mx-auto mt-8 grid max-w-5xl grid-cols-1 items-start gap-5 md:grid-cols-2"
             >
               {team.map((member) => (
-                <motion.div key={member.name} variants={sectionMotion} whileHover={{ y: -6 }} transition={{ duration: 0.2 }} className="h-full">
+                <motion.div key={member.name} variants={sectionMotion} whileHover={{ y: -6 }} transition={{ duration: 0.2 }}>
                   <TeamPortrait {...member} />
                 </motion.div>
               ))}
@@ -1234,28 +1282,25 @@ export default function SiteHome({ reviewsData }: { reviewsData: ReviewsResult }
           </div>
         </section>
 
-        <section className="px-6 py-16 md:px-8 md:py-20">
-          <div className="mx-auto max-w-7xl rounded-[36px] border border-[#18191c]/8 bg-[linear-gradient(135deg,#17181a_0%,#26282e_60%,#8f837a_100%)] px-6 py-12 text-white shadow-[0_30px_80px_rgba(23,24,26,0.18)] md:px-10 md:py-16">
-            <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-              <div>
-                <Badge className="bg-white/12 text-white">Chamada final</Badge>
-                <h2 className="mt-6 max-w-3xl font-heading text-4xl font-semibold tracking-tight md:text-6xl">
-                  Seu próximo sorriso começa com uma conversa simples.
-                </h2>
-                <p className="mt-5 max-w-2xl text-base leading-8 text-white/80 md:text-lg">
-                  Agende uma avaliação e descubra como a Odonto Casais pode transformar sua experiência em um atendimento seguro, acolhedor e visualmente impecável.
-                </p>
-              </div>
-              <div className="flex flex-col items-start gap-3 lg:items-end">
-                <Button asChild size="lg" variant="secondary" className="min-w-[240px] bg-white text-[#18191c] hover:bg-[#d9d5d2]">
-                  <Link href={whatsappUrl} target="_blank" rel="noreferrer noopener">
-                    Falar no WhatsApp
-                    <Image src={whatsappIconImage} alt="" className="h-4 w-4 object-contain" />
-                  </Link>
-                </Button>
-                <p className="text-sm text-white/72">Resposta rápida, linguagem clara e atendimento pensado para sua rotina.</p>
-              </div>
-            </div>
+        <section id="depoimentos-video" className="scroll-mt-28 px-6 py-20 md:px-8 md:py-28">
+          <div className="mx-auto max-w-7xl">
+            <SectionHeading
+              eyebrow="Depoimentos em vídeo"
+              title="Pacientes que contam, com as próprias palavras, sua experiência."
+              description="Assista aos relatos de quem já passou pela Odonto Casais e viveu um atendimento humanizado do início ao fim."
+              align="center"
+            />
+            <motion.div
+              variants={staggerMotion}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-10% 0px" }}
+              className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            >
+              {videoTestimonials.map((item) => (
+                <VideoTestimonialCard key={item.name + item.video} item={item} />
+              ))}
+            </motion.div>
           </div>
         </section>
 
