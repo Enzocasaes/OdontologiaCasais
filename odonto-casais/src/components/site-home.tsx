@@ -1,725 +1,304 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import type { StaticImageData } from "next/image";
 import Link from "next/link";
-import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer-motion";
-import {
-  ArrowRight,
-  CheckCircle2,
-  Globe,
-  MapPinned,
-  Menu,
-  Star,
-  X,
-  type LucideIcon,
-} from "lucide-react";
+import { AnimatePresence, MotionConfig, motion, type Variants } from "framer-motion";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { GoogleReviewsCarousel } from "@/components/google-reviews/google-reviews-carousel";
-import { GoogleReviewsSummary } from "@/components/google-reviews/reviews-summary";
+import { GoogleLogo } from "@/components/google-reviews/google-logo";
+import { GoogleReviewCard, StarRow } from "@/components/google-reviews/review-card";
 import { GoogleReviewsStructuredData } from "@/components/google-reviews/structured-data";
 import draIanaImage from "@/images/DraIana.jpg";
 import drChristianImage from "@/images/DrChristian.jpg";
 import drDeivsonImage from "@/images/DrDeivson.jpeg";
 import tratamentoAntesImage from "@/images/tratamentoAntes.jpeg";
 import tratamentoDepoisImage from "@/images/tratamentoDepois.jpeg";
-import instagramIconImage from "@/images/instagram.png";
 import logoLockupImage from "@/images/logo-odontocasais-lockup.png";
-import logoIconImage from "@/images/logo-odontocasais-icon.png";
-import mapsIconImage from "@/images/maps.png";
-import clockIconImage from "@/images/relogio.png";
+import clinicSignImage from "@/images/logoOdontocasaes.jpeg";
 import whatsappIconImage from "@/images/wpp.png";
 import type { ReviewsResult } from "@/lib/reviews/types";
 import { cn } from "@/lib/utils";
 
 const whatsappNumber = "5533998669729";
-const whatsappText = encodeURIComponent("Olá, gostaria de agendar uma avaliação na Odonto Casais.");
-const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappText}`;
+const whatsappDisplay = "(33) 99866-9729";
+
+function getWhatsappUrl(message: string) {
+  return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+}
+
+const whatsappUrl = getWhatsappUrl("Olá, gostaria de agendar uma avaliação na Odonto Casais.");
+const whatsappQuestionUrl = getWhatsappUrl("Olá, tenho uma dúvida sobre um tratamento na Odonto Casais.");
+
+const openingHours = [
+  { days: "Segunda a sexta", hours: "08h às 18h" },
+  { days: "Sábado", hours: "08h às 12h" },
+] as const;
 
 const clinicLocations = [
-  { name: "Unidade Centro", address: "Rua Minervino de Castro Pinto, 80 - Centro, Teófilo Otoni/MG" },
-  { name: "Unidade Getúlio Vargas", address: "Av. Getúlio Vargas, 1200 - Centro, Teófilo Otoni/MG" },
-];
+  { name: "Unidade Centro", street: "Rua Minervino de Castro Pinto, 80", district: "Centro, Teófilo Otoni/MG" },
+  { name: "Unidade Getúlio Vargas", street: "Av. Getúlio Vargas, 1200", district: "Centro, Teófilo Otoni/MG" },
+] as const;
+
 const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-function getGoogleMapsSearchUrl(address: string) {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+// Formato que o Google Maps reconhece ("Rua, número, Bairro, Cidade - UF").
+function getFullAddress(location: (typeof clinicLocations)[number]) {
+  return `${location.street}, ${location.district.replace("/", " - ")}`;
+}
+
+function getDirectionsUrl(address: string) {
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
 }
 
 const navItems = [
   { label: "Sobre", href: "#sobre" },
-  { label: "Equipe", href: "#equipe" },
   { label: "Tratamentos", href: "#tratamentos" },
+  { label: "Equipe", href: "#equipe" },
   { label: "Depoimentos", href: "#depoimentos" },
   { label: "Contato", href: "#contato" },
-];
-
-const essenceParagraph =
-  "Acreditamos que tratar bem vai além do procedimento em si: envolve explicar as opções com calma, respeitar o ritmo de cada paciente e acompanhar o caso até o fim. É esse padrão que buscamos manter nas duas unidades, em Teófilo Otoni.";
-
-const principles = [
-  {
-    title: "Atenção individual",
-    description: "Cada plano de tratamento é pensado para a pessoa que está na cadeira, não para um protocolo padrão.",
-  },
-  {
-    title: "Transparência",
-    description: "Você sabe o que está sendo feito, e por quê, em cada etapa do tratamento.",
-  },
-  {
-    title: "Atualização constante",
-    description: "A equipe segue em formação — pós-graduações, especializações e associações científicas.",
-  },
 ] as const;
 
-const differentials = [
+/*
+ * Fotos de ambiente. Quando houver fotos reais da recepção, dos consultórios ou de
+ * um atendimento, importe o arquivo de src/images e troque `src`/`alt` aqui —
+ * o layout já está preparado para imagens verticais (4:5).
+ */
+const photos = {
+  hero: {
+    src: draIanaImage,
+    alt: "Dra. Iana Guedes sentada à mesa do consultório da Odonto Casais",
+    caption: "Dra. Iana Guedes, no consultório",
+    detail: "CRO-MG 58340",
+    position: "50% 40%",
+  },
+  about: {
+    src: clinicSignImage,
+    alt: "Placa com a marca Odonto Casais, clínica odontológica",
+    position: "55% 50%",
+  },
+};
+
+const aboutParagraphs = [
+  "A Odonto Casais reúne dentistas de dentística, prótese, ortodontia, endodontia e implantodontia, para que cada paciente encontre o profissional certo para o seu caso sem precisar procurar em vários lugares.",
+  "Acreditamos que tratar bem vai além do procedimento em si: envolve explicar as opções com calma, respeitar o ritmo de cada paciente e acompanhar o caso até o fim. É esse padrão que buscamos manter nas duas unidades.",
+] as const;
+
+const aboutHighlights = [
   {
-    number: "01",
-    title: "Diagnóstico por imagem",
-    description: "Planejamento com apoio de radiografia e um dentista especializado em radiologia odontológica antes de iniciar o tratamento.",
+    title: "Duas unidades",
+    description: "Rua Minervino de Castro Pinto e Av. Getúlio Vargas, ambas no Centro de Teófilo Otoni.",
   },
   {
-    number: "02",
+    title: "Diagnóstico por imagem",
+    description: "Planejamento com apoio de radiografia e de um dentista com formação em radiologia odontológica, antes de iniciar o tratamento.",
+  },
+  {
     title: "Biossegurança",
     description: "Protocolos de esterilização e organização seguidos em cada etapa do atendimento, nas duas unidades.",
   },
   {
-    number: "03",
-    title: "Consultório pensado para reduzir a ansiedade",
+    title: "Para quem tem receio",
     description: "Salas silenciosas e explicação de cada passo antes de começar, para quem evita ir ao dentista.",
   },
 ] as const;
 
-const featuredTreatment = {
-  title: "Implantes e Reabilitação Oral",
-  description:
-    "Recupere a estética, a mastigação e a confiança para sorrir com tratamentos personalizados e planejamento digital.",
-  image: "https://images.unsplash.com/photo-1593022356769-11f762e25ed9?q=80&w=1800&auto=format&fit=crop",
-  benefits: [
-    "Recuperação da função mastigatória",
-    "Estética natural",
-    "Planejamento individualizado",
-    "Tecnologia moderna",
-  ],
-  conversionPoints: [
-    "Avaliação personalizada",
-    "Planejamento digital",
-    "Atendimento humanizado",
-    "Tecnologia moderna",
-  ],
-} as const;
-
-const treatments = [
-  {
-    title: "Facetas em porcelana",
-    description: "Lâminas finas e resistentes que corrigem cor, formato e alinhamento com resultado natural.",
-    image: "https://images.unsplash.com/photo-1677026010083-78ec7f1b84ed?q=80&w=1200&auto=format&fit=crop",
-  },
-  {
-    title: "Lentes de contato dental",
-    description: "Ultrafinas e translúcidas, elevam a estética do sorriso preservando o dente natural.",
-    image: "https://images.unsplash.com/photo-1654373535457-383a0a4d00f9?q=80&w=1200&auto=format&fit=crop",
-  },
-  {
-    title: "Ortodontia",
-    description: "Alinhamento funcional e estético da mordida, com acompanhamento contínuo e resultados previsíveis.",
-    image: "https://images.unsplash.com/photo-1720685193942-5a1c5ac7fd80?q=80&w=1200&auto=format&fit=crop",
-  },
-  {
-    title: "Prótese removível",
-    description: "Reposição confortável e estável de dentes, devolvendo função e naturalidade ao sorriso.",
-    image: "https://images.unsplash.com/photo-1562330743-fbc6ef07ca78?q=80&w=1200&auto=format&fit=crop",
-  },
-  {
-    title: "Endodontia",
-    description: "Tratamento de canal com técnica precisa para aliviar a dor e preservar o dente natural.",
-    image: "https://images.unsplash.com/photo-1643292116094-bd2fb3ed4d64?q=80&w=1200&auto=format&fit=crop",
-  },
+const clinicFigures = [
+  { value: "12.000+", label: "pacientes atendidos" },
+  { value: "3+", label: "anos de experiência" },
 ] as const;
-
-const beforeAfterCase = {
-  treatment: "facetas e lentes de contato dental",
-  before: tratamentoAntesImage,
-  after: tratamentoDepoisImage,
-} as const;
 
 const team = [
   {
     name: "Dra. Iana Guedes",
-    role: "Dentística, Prótese Dentária e Ortodontia",
+    role: "Dentística, Prótese e Ortodontia",
     cro: "CRO-MG 58340",
-    postGraduations: [
-      "Pós-graduada em Dentística",
-      "Pós-graduada em Prótese Dentária",
-      "Especializando em Ortodontia",
-    ],
-    bio: "Tenho a convicção de que a odontologia vai muito além de tratar dentes: ela tem o poder de transformar vidas. Ao longo da minha trajetória, busco constantemente novos conhecimentos para oferecer tratamentos de excelência, sempre aliados a um atendimento humanizado. Acredito que cada paciente é único e merece ser acolhido com carinho, atenção e respeito. Meu propósito é cuidar de pessoas, devolver confiança, promover saúde e proporcionar sorrisos que reflitam felicidade e bem-estar. É com dedicação, amor pela profissão e compromisso com a qualidade que sigo construindo essa história, fazendo da odontologia uma ferramenta de transformação na vida de cada paciente.",
+    summary: "Pós-graduada em Dentística e em Prótese Dentária, especializando em Ortodontia. Cuida da estética e da função do sorriso.",
+    bio: "Tenho a convicção de que a odontologia vai muito além de tratar dentes: ela tem o poder de transformar vidas. Ao longo da minha trajetória, busco constantemente novos conhecimentos para oferecer tratamentos de excelência, sempre aliados a um atendimento humanizado. Acredito que cada paciente é único e merece ser acolhido com carinho, atenção e respeito. Meu propósito é cuidar de pessoas, devolver confiança, promover saúde e proporcionar sorrisos que reflitam felicidade e bem-estar.",
     image: draIanaImage,
+    position: "50% 22%",
   },
   {
     name: "Dr. Christian Freitas",
-    role: "Endodontia e Radiologia Odontológica",
+    role: "Endodontia e Radiologia",
     cro: "CRO-MG 62584",
-    postGraduations: [
-      "Especialista em Endodontia",
-      "Capacitado em Blindagem de Dentes Tratados Endodonticamente",
-      "Pós-graduando em Radiologia Odontológica",
-      "Associado à SBPqO e à IADR",
-    ],
-    bio: "Sou cirurgião-dentista graduado pela Universidade Federal de Juiz de Fora – Campus Governador Valadares (UFJF-GV), especialista em Endodontia, capacitado em Blindagem de Dentes Tratados Endodonticamente e, atualmente, pós-graduando em Radiologia Odontológica. Sou associado à Sociedade Brasileira de Pesquisa Odontológica (SBPqO) e à International Association for Dental Research (IADR), mantendo constante atualização científica e compromisso com uma Odontologia baseada em evidências. Minha atuação é voltada à preservação dos dentes naturais por meio de diagnósticos precisos e tratamentos endodônticos realizados com técnicas modernas e tecnologia de ponta. Acredito que cada paciente merece um atendimento humanizado, transparente e individualizado, priorizando conforto, segurança e excelência em cada etapa do tratamento. Meu compromisso é oferecer soluções eficazes para promover saúde, qualidade de vida e confiança aos pacientes, sempre pautado pela ética, dedicação e aprimoramento profissional contínuo.",
+    summary: "Especialista em Endodontia e pós-graduando em Radiologia Odontológica. Formado pela UFJF-GV, associado à SBPqO e à IADR.",
+    bio: "Sou cirurgião-dentista graduado pela Universidade Federal de Juiz de Fora – Campus Governador Valadares (UFJF-GV), especialista em Endodontia, capacitado em Blindagem de Dentes Tratados Endodonticamente e, atualmente, pós-graduando em Radiologia Odontológica. Minha atuação é voltada à preservação dos dentes naturais por meio de diagnósticos precisos e tratamentos endodônticos realizados com técnicas modernas. Acredito que cada paciente merece um atendimento humanizado, transparente e individualizado.",
     image: drChristianImage,
+    position: "50% 18%",
   },
   {
     name: "Dr. Deivson Norte",
     role: "Implantodontia",
     cro: "CRO-MG 78629",
-    postGraduations: ["Imersão em Implantodontia"],
-    bio: "Há histórias que não mudam de propósito, apenas de missão. A minha começou vestindo uma farda da Polícia Militar, onde aprendi que servir ao próximo exige coragem, disciplina e compromisso. São anos protegendo vidas, enfrentando desafios e entendendo o verdadeiro significado da palavra dedicação. Com o passar do tempo, nasceu uma nova paixão: a Odontologia. Descobri que também era possível transformar vidas por meio de um sorriso, aliviar dores, devolver autoestima e cuidar das pessoas de uma forma diferente, mas igualmente importante. A missão continua a mesma, fazer a diferença na vida das pessoas.",
+    summary: "Cirurgião-dentista com imersão em Implantodontia. Traz da carreira na Polícia Militar a disciplina e o compromisso de servir.",
+    bio: "Há histórias que não mudam de propósito, apenas de missão. A minha começou vestindo uma farda da Polícia Militar, onde aprendi que servir ao próximo exige coragem, disciplina e compromisso. Com o passar do tempo, nasceu uma nova paixão: a Odontologia. Descobri que também era possível transformar vidas por meio de um sorriso, aliviar dores, devolver autoestima e cuidar das pessoas de uma forma diferente, mas igualmente importante.",
     image: drDeivsonImage,
+    position: "50% 15%",
   },
 ] as const;
 
-const videoTestimonials: {
-  name?: string;
-  treatment?: string;
-  video?: string;
-  poster?: StaticImageData;
-}[] = [
+type TeamMember = (typeof team)[number];
+const [iana, christian, deivson] = team;
+
+const featuredTreatments = [
   {
-    name: "Paciente Odonto Casais",
-    treatment: "Facetas e lentes de contato dental",
-    video: "/videos/depoimento1.mp4",
+    id: "facetas-e-lentes",
+    title: "Facetas e lentes de contato dental",
+    description:
+      "Lâminas finas que corrigem cor, formato e alinhamento dos dentes. As facetas em porcelana são mais resistentes; as lentes de contato são ultrafinas e preservam ao máximo o dente natural.",
+    points: ["Cor", "Formato", "Alinhamento"],
+    professional: iana,
   },
-  {},
-  {},
-];
-
-const stats = [
-  { value: 12000, label: "pacientes atendidos" },
-  { value: 3, label: "anos de experiência" },
-  { value: 100, label: "dedicação ao cliente" },
+  {
+    id: "implantes",
+    title: "Implantes e reabilitação oral",
+    description:
+      "Para quem perdeu um ou mais dentes. O implante devolve a mastigação e a estética do sorriso, com planejamento individual para cada caso.",
+    points: ["Mastigação", "Estética natural", "Planejamento individual"],
+    professional: deivson,
+    image: "https://images.unsplash.com/photo-1593022356769-11f762e25ed9?q=75&w=1600&auto=format&fit=crop",
+    imageAlt: "Modelo odontológico mostrando um implante entre dois dentes naturais",
+  },
 ] as const;
 
-const socialLinks = [
-  { label: "Instagram @odontocasais", href: "https://www.instagram.com/odontocasais/", icon: instagramIconImage },
-  { label: "Instagram @clinica.odontocasais", href: "https://www.instagram.com/clinica.odontocasais/", icon: instagramIconImage },
-  { label: "Portal", href: "https://odontocasais.com.br", icon: Globe },
-];
-
-const footerLinks = [
-  { label: "Início", href: "#inicio" },
-  { label: "Sobre", href: "#sobre" },
-  { label: "Tratamentos", href: "#tratamentos" },
-  { label: "Equipe", href: "#equipe" },
-  { label: "Contato", href: "#contato" },
+const otherTreatments = [
+  {
+    title: "Ortodontia",
+    description: "Alinhamento funcional e estético da mordida, com acompanhamento contínuo ao longo do tratamento.",
+    professional: iana,
+  },
+  {
+    title: "Prótese removível",
+    description: "Reposição confortável e estável de dentes, devolvendo função e naturalidade ao sorriso.",
+    professional: iana,
+  },
+  {
+    title: "Endodontia",
+    description: "Tratamento de canal com técnica precisa para aliviar a dor e preservar o dente natural.",
+    professional: christian,
+  },
 ] as const;
 
-const sectionMotion: Variants = {
-  hidden: { opacity: 0, y: 26 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7 },
-  },
+const allTreatmentTitles = [
+  ...featuredTreatments.map((item) => item.title),
+  ...otherTreatments.map((item) => item.title),
+];
+
+const videoTestimonial = {
+  treatment: "Facetas e lentes de contato dental",
+  video: "/videos/depoimento1.mp4",
+} as const;
+
+const instagramProfiles = [
+  { handle: "@odontocasais", href: "https://www.instagram.com/odontocasais/" },
+  { handle: "@clinica.odontocasais", href: "https://www.instagram.com/clinica.odontocasais/" },
+] as const;
+
+const revealMotion: Variants = {
+  hidden: { opacity: 0, y: 14 },
+  visible: (delay: number = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] } }),
 };
 
-const staggerMotion: Variants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.08 } },
-};
-
-function BrandMark({ className, priority = false }: { className?: string; priority?: boolean }) {
+function Reveal({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
   return (
-    <div className={cn("flex items-center", className)}>
+    <motion.div
+      variants={revealMotion}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "0px 0px -12% 0px" }}
+      custom={delay}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function Eyebrow({ children, className, tone = "default" }: { children: React.ReactNode; className?: string; tone?: "default" | "light" }) {
+  return (
+    <p
+      className={cn(
+        "flex items-center gap-3 text-[0.75rem] font-medium uppercase tracking-[0.18em]",
+        tone === "light" ? "text-paper/60" : "text-bronze",
+        className,
+      )}
+    >
+      <span aria-hidden="true" className={cn("h-px w-6", tone === "light" ? "bg-paper/40" : "bg-bronze/60")} />
+      {children}
+    </p>
+  );
+}
+
+function SectionTitle({ children, className, as: Tag = "h2" }: { children: React.ReactNode; className?: string; as?: "h2" | "h3" }) {
+  return (
+    <Tag className={cn("font-heading text-[clamp(2rem,3.6vw,3.25rem)] font-medium leading-[1.08] tracking-[-0.03em] text-ink", className)}>
+      {children}
+    </Tag>
+  );
+}
+
+function ExternalLink({ href, children, className, onClick }: { href: string; children: React.ReactNode; className?: string; onClick?: () => void }) {
+  return (
+    <Link href={href} target="_blank" rel="noreferrer noopener" className={className} onClick={onClick}>
+      {children}
+    </Link>
+  );
+}
+
+function Photo({
+  src,
+  alt,
+  sizes,
+  position = "50% 50%",
+  className,
+  preload = false,
+}: {
+  src: StaticImageData | string;
+  alt: string;
+  sizes: string;
+  position?: string;
+  className?: string;
+  preload?: boolean;
+}) {
+  return (
+    <div className={cn("relative overflow-hidden rounded-[3px] bg-stone", className)}>
       <Image
-        src={logoLockupImage}
-        alt="Odonto Casais"
-        className="h-10 w-auto rounded-xl shadow-[0_12px_32px_rgba(23,24,26,0.18)] sm:h-12"
-        priority={priority}
+        src={src}
+        alt={alt}
+        fill
+        sizes={sizes}
+        preload={preload}
+        placeholder={typeof src === "string" ? "empty" : "blur"}
+        style={{ objectPosition: position }}
+        className="photo-tone photo-hover object-cover"
       />
     </div>
   );
 }
 
-function SectionBadge({ children }: { children: React.ReactNode }) {
+function ProfessionalTag({ member, className }: { member: TeamMember; className?: string }) {
   return (
-    <Badge variant="soft" className="border border-[#bcb5b0] bg-[#d5d2cf] px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#525763]">
-      {children}
-    </Badge>
-  );
-}
-
-function AnimatedCounter({ value, suffix = "", prefix = "" }: { value: number; suffix?: string; prefix?: string }) {
-  const ref = useRef<HTMLSpanElement | null>(null);
-  const reducedMotion = useReducedMotion();
-  const [current, setCurrent] = useState(() => (reducedMotion ? value : 0));
-
-  useEffect(() => {
-    if (reducedMotion) return;
-
-    const element = ref.current;
-    if (!element) return;
-
-    let started = false;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !started) {
-          started = true;
-          const duration = 1100;
-          const startTime = performance.now();
-
-          const tick = (time: number) => {
-            const progress = Math.min((time - startTime) / duration, 1);
-            setCurrent(Math.round(progress * value));
-            if (progress < 1) {
-              requestAnimationFrame(tick);
-            }
-          };
-
-          requestAnimationFrame(tick);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.45 },
-    );
-
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [reducedMotion, value]);
-
-  return (
-    <span ref={ref}>
-      {prefix}
-      {current.toLocaleString("pt-BR")}
-      {suffix}
-    </span>
-  );
-}
-
-function SectionHeading({ eyebrow, title, description, align = "left" }: { eyebrow: string; title: string; description: string; align?: "left" | "center" }) {
-  return (
-    <motion.div variants={sectionMotion} className={cn("max-w-3xl", align === "center" && "mx-auto text-center") }>
-      <SectionBadge>{eyebrow}</SectionBadge>
-      <h2 className="mt-5 font-heading text-3xl font-semibold tracking-tight text-[#18191c] md:text-5xl">{title}</h2>
-      <p className={cn("mt-4 text-base leading-8 text-[#4f535b] md:text-lg", align === "center" && "mx-auto max-w-2xl")}>
-        {description}
-      </p>
-    </motion.div>
-  );
-}
-
-function FloatingWhatsApp() {
-  return (
-    <Link
-      href={whatsappUrl}
-      target="_blank"
-      rel="noreferrer noopener"
-      aria-label="Agendar avaliação via WhatsApp"
-      className="fixed bottom-5 right-5 z-50 rounded-full transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#18191c]/50 focus-visible:ring-offset-2"
-    >
-      <Image src={whatsappIconImage} alt="" className="h-20 w-20 rounded-2xl object-contain" />
+    <Link href="#equipe" className={cn("group/pro inline-flex items-center gap-3 text-sm", className)}>
+      <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-stone">
+        <Image src={member.image} alt="" fill sizes="36px" style={{ objectPosition: member.position }} className="photo-tone object-cover" />
+      </span>
+      <span className="leading-tight">
+        <span className="block text-muted">Com</span>
+        <span className="link-underline font-medium text-ink">{member.name}</span>
+      </span>
     </Link>
   );
 }
 
-function MediaPlaceholder({
-  label,
-  aspect = "aspect-[4/3]",
-  className,
-  dark = false,
-}: {
-  label: string;
-  aspect?: string;
-  className?: string;
-  dark?: boolean;
-}) {
-  return (
-    <div
-      role="img"
-      aria-label={label}
-      data-placeholder={label}
-      className={cn(
-        "relative flex items-center justify-center overflow-hidden rounded-[22px]",
-        dark
-          ? "bg-[linear-gradient(155deg,#26282c_0%,#1b1c1f_100%)]"
-          : "bg-[linear-gradient(155deg,#dedad7_0%,#c9c3be_100%)]",
-        aspect,
-        className,
-      )}
-    >
-      <Image src={logoIconImage} alt="" className={cn("h-10 w-10 object-contain", dark ? "opacity-30" : "opacity-25")} />
-    </div>
-  );
-}
-
-function SiteHeader({ scrolled, menuOpen, setMenuOpen }: { scrolled: boolean; menuOpen: boolean; setMenuOpen: (value: boolean) => void }) {
-  return (
-    <header
-      className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-all duration-300",
-        scrolled ? "bg-[#e1dfdd]/82 shadow-[0_14px_40px_rgba(23,24,26,0.08)] backdrop-blur-xl" : "bg-transparent",
-      )}
-    >
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 md:px-8">
-        <Link href="#inicio" aria-label="Ir para o início">
-          <BrandMark priority />
-        </Link>
-
-        <nav className="hidden items-center gap-2 lg:flex">
-          {navItems.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className="rounded-full px-4 py-2 text-sm font-medium text-[#474a52] transition hover:bg-white/70 hover:text-[#18191c]"
-            >
-              {item.label}
-            </Link>
-          ))}
-          <Button asChild className="ml-2">
-            <Link href={whatsappUrl} target="_blank" rel="noreferrer noopener">
-              Agende agora
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        </nav>
-
-        <button
-          type="button"
-          aria-expanded={menuOpen}
-          aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#18191c]/10 bg-white/80 text-[#18191c] shadow-[0_10px_30px_rgba(23,24,26,0.08)] lg:hidden"
-        >
-          {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
-      </div>
-
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="border-t border-[#18191c]/8 bg-[#e1dfdd]/96 px-6 pb-6 pt-2 shadow-[0_16px_34px_rgba(23,24,26,0.08)] backdrop-blur-xl lg:hidden"
-          >
-            <div className="mx-auto flex max-w-7xl flex-col gap-2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="rounded-2xl px-4 py-3 text-sm font-medium text-[#18191c] hover:bg-white"
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <Button asChild className="mt-3 w-full">
-                <Link href={whatsappUrl} target="_blank" rel="noreferrer noopener" onClick={() => setMenuOpen(false)}>
-                  Agende uma avaliação
-                </Link>
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </header>
-  );
-}
-
-function MapPlaceholder() {
-  const [unitCentro, unitGetulioVargas] = clinicLocations;
-  const googleMapsDirectionsEmbedUrl = googleMapsApiKey
-    ? `https://www.google.com/maps/embed/v1/directions?key=${googleMapsApiKey}&origin=${encodeURIComponent(unitCentro.address)}&destination=${encodeURIComponent(unitGetulioVargas.address)}`
-    : null;
-
-  return (
-    <Card className="overflow-hidden">
-      <CardHeader>
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <CardTitle>Como chegar</CardTitle>
-            <CardDescription>Nossas duas unidades em Teófilo Otoni</CardDescription>
-          </div>
-          <Image src={mapsIconImage} alt="" className="h-10 w-10 object-contain" />
-        </div>
-      </CardHeader>
-      <CardContent>
-        {googleMapsDirectionsEmbedUrl ? (
-          <div className="relative aspect-[4/3] overflow-hidden rounded-[22px] border border-[#18191c]/8">
-            <iframe
-              src={googleMapsDirectionsEmbedUrl}
-              title="Mapa com as unidades Odonto Casais"
-              className="absolute inset-0 h-full w-full border-0"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allowFullScreen
-            />
-          </div>
-        ) : (
-          <div className="relative overflow-hidden rounded-[26px] border border-[#18191c]/8 bg-[linear-gradient(180deg,#dedad8_0%,#d4cfcc_100%)] p-6">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(23,24,26,0.06),transparent_22%),radial-gradient(circle_at_80%_25%,rgba(23,24,26,0.05),transparent_18%),linear-gradient(transparent_49%,rgba(23,24,26,0.03)_50%,transparent_51%),linear-gradient(90deg,transparent_49%,rgba(23,24,26,0.03)_50%,transparent_51%)] bg-[length:100%_100%,100%_100%,24px_24px,24px_24px]" />
-            <div className="relative aspect-[4/3] rounded-[22px] border border-white/70 bg-white/55 p-5 shadow-[0_18px_40px_rgba(23,24,26,0.08)] backdrop-blur-sm">
-              <div className="absolute left-[38%] top-[42%] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#17181a] text-white shadow-[0_14px_30px_rgba(23,24,26,0.18)]">
-                  <MapPinned className="h-5 w-5" />
-                </div>
-                <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#535863] shadow-sm">
-                  {unitCentro.name}
-                </span>
-              </div>
-              <div className="absolute left-[66%] top-[62%] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#17181a] text-white shadow-[0_14px_30px_rgba(23,24,26,0.18)]">
-                  <MapPinned className="h-5 w-5" />
-                </div>
-                <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#535863] shadow-sm">
-                  {unitGetulioVargas.name}
-                </span>
-              </div>
-              <div className="absolute left-5 top-5 flex gap-2">
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-[#515662] shadow-sm">Google Maps</span>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-[#515662] shadow-sm">
-                  chave não configurada
-                </span>
-              </div>
-              <div className="absolute inset-x-5 bottom-5 rounded-[20px] bg-[#17181a]/92 px-4 py-3 text-white shadow-[0_14px_34px_rgba(23,24,26,0.18)]">
-                <p className="text-xs uppercase tracking-[0.22em] text-white/65">Endereços</p>
-                {clinicLocations.map((location) => (
-                  <p key={location.name} className="mt-1 text-sm font-medium">
-                    {location.name} — {location.address}
-                  </p>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </CardContent>
-      <CardFooter className="flex flex-wrap gap-3">
-        {clinicLocations.map((location) => (
-          <Button asChild variant="secondary" key={location.name}>
-            <Link href={getGoogleMapsSearchUrl(location.address)} target="_blank" rel="noreferrer noopener">
-              Abrir {location.name} no Maps
-            </Link>
-          </Button>
-        ))}
-        <Button asChild variant="outline">
-          <Link href={whatsappUrl} target="_blank" rel="noreferrer noopener">
-            Tirar dúvidas no WhatsApp
-          </Link>
-        </Button>
-      </CardFooter>
-    </Card>
-  );
-}
-
-function SocialLink({
-  href,
-  label,
-  icon: Icon,
-}: {
-  href: string;
-  label: string;
-  icon: LucideIcon | StaticImageData;
-}) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer noopener"
-      className={
-        "src" in Icon
-          ? "flex h-11 w-11 items-center justify-center transition hover:-translate-y-0.5"
-          : "flex h-11 w-11 items-center justify-center rounded-full border border-[#18191c]/10 bg-white text-[#18191c] transition hover:-translate-y-0.5 hover:bg-[#18191c] hover:text-white"
-      }
-      aria-label={label}
-    >
-      {"src" in Icon ? <Image src={Icon} alt="" className="h-9 w-9 object-contain" /> : <Icon className="h-4 w-4" />}
-    </a>
-  );
-}
-
-function TeamPortrait({ name, role, cro, postGraduations, bio, image }: (typeof team)[number]) {
-  const [expanded, setExpanded] = useState(false);
-
-  return (
-    <Card className="group overflow-hidden border-[#18191c]/8 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(23,24,26,0.12)]">
-      <div className="flex flex-col sm:flex-row">
-        <div className="p-4 sm:w-[38%] sm:shrink-0 sm:self-start">
-          <Image src={image} alt={name} width={500} height={625} className="aspect-[4/5] w-full rounded-[20px] object-cover object-top" />
-        </div>
-        <div className="flex flex-1 flex-col justify-center gap-3 p-5 pt-1 sm:pt-5 sm:pl-0">
-          <div>
-            <CardTitle className="text-lg">{name}</CardTitle>
-            <p className="mt-0.5 text-xs uppercase tracking-[0.18em] text-[#81756c]">{role}</p>
-            <p className="mt-1.5 text-xs text-[#847b74]">{cro}</p>
-          </div>
-          <div>
-            <p className={`text-sm leading-6 text-[#4f535b] ${expanded ? "" : "line-clamp-4"}`}>{bio}</p>
-            <button
-              type="button"
-              onClick={() => setExpanded((prev) => !prev)}
-              className="mt-1 text-xs font-medium text-[#18191c] underline underline-offset-2 hover:text-[#4f535b]"
-            >
-              {expanded ? "Ler menos" : "Ler mais"}
-            </button>
-          </div>
-          <p className="text-xs leading-5 text-[#847b74]">{postGraduations.join(" · ")}</p>
-          <Button asChild variant="outline" size="sm" className="w-fit">
-            <Link href="#contato">Agendar avaliação</Link>
-          </Button>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-function VideoTestimonialCard({ item }: { item: (typeof videoTestimonials)[number] }) {
-  return (
-    <motion.div variants={sectionMotion} whileHover={{ y: -6 }} transition={{ duration: 0.2 }}>
-      <Card className="h-full overflow-hidden border-[#18191c]/8 bg-white transition-all duration-300 hover:shadow-[0_20px_50px_rgba(23,24,26,0.12)]">
-        <div className="relative aspect-[9/16] w-full overflow-hidden bg-[#18191c]">
-          {item.video ? (
-            <video
-              src={item.video}
-              poster={item.poster?.src}
-              controls
-              preload="none"
-              playsInline
-              className="h-full w-full object-cover"
-            >
-              Seu navegador não suporta vídeos.
-            </video>
-          ) : (
-            <MediaPlaceholder label="Vídeo de depoimento de paciente" aspect="" className="h-full w-full rounded-none" dark />
-          )}
-        </div>
-        {item.video && (
-          <CardHeader>
-            <CardTitle className="text-base">{item.name}</CardTitle>
-            <p className="text-xs uppercase tracking-[0.18em] text-[#81756c]">{item.treatment}</p>
-          </CardHeader>
-        )}
-      </Card>
-    </motion.div>
-  );
-}
-
-function AppDivider() {
-  return <div className="mx-auto h-px w-full max-w-7xl bg-[linear-gradient(90deg,transparent,rgba(24,25,28,0.12),transparent)]" />;
-}
-
-function FeaturedTreatmentCard({ item }: { item: typeof featuredTreatment }) {
-  return (
-    <motion.div variants={sectionMotion} whileHover={{ y: -6 }} transition={{ duration: 0.3 }}>
-      <Card className="overflow-hidden border-[#18191c]/8 bg-white shadow-[0_30px_80px_rgba(23,24,26,0.14)]">
-        <div className="grid lg:grid-cols-[1.05fr_1fr]">
-          <div className="relative min-h-[320px] overflow-hidden lg:min-h-[640px]">
-            <Image
-              src={item.image}
-              alt={item.title}
-              fill
-              sizes="(min-width: 1024px) 55vw, 100vw"
-              priority={false}
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(23,24,26,0.05)_0%,transparent_28%,rgba(23,24,26,0.28)_100%)] lg:bg-[linear-gradient(90deg,transparent_55%,rgba(23,24,26,0.18)_100%)]" />
-            <div className="absolute left-5 top-5">
-              <Badge className="flex items-center gap-1.5 bg-[#17181a] px-4 py-1.5 text-white shadow-[0_14px_34px_rgba(23,24,26,0.28)]">
-                <Star className="h-3.5 w-3.5 fill-current text-[#c2bbb7]" />
-                Especialidade da clínica
-              </Badge>
-            </div>
-          </div>
-
-          <div className="flex min-w-0 flex-col justify-between gap-8 p-8 md:p-10 lg:p-12">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#81756c]">Tratamento em destaque</p>
-              <h3 className="mt-3 font-heading text-3xl font-semibold tracking-tight text-[#18191c] md:text-4xl">
-                {item.title}
-              </h3>
-              <p className="mt-4 text-base leading-8 text-[#4f535b] md:text-lg">{item.description}</p>
-
-              <ul className="mt-7 grid gap-3 sm:grid-cols-2">
-                {item.benefits.map((benefit) => (
-                  <li key={benefit} className="flex items-start gap-2.5 text-sm text-[#3d414a]">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#81756c]" />
-                    <span>{benefit}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Button asChild size="lg" className="mt-8 h-auto whitespace-normal py-3.5 text-center">
-                <Link href="#contato">
-                  Quero agendar uma avaliação
-                  <ArrowRight className="h-4 w-4 shrink-0" />
-                </Link>
-              </Button>
-            </div>
-
-            <div className="rounded-[24px] border border-[#18191c]/8 bg-[#e0dcda] p-6">
-              <ul className="grid gap-2.5 sm:grid-cols-2">
-                {item.conversionPoints.map((point) => (
-                  <li key={point} className="flex items-start gap-2.5 text-sm text-[#3d414a]">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#18191c]" />
-                    <span>{point}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button asChild size="lg" className="mt-5 h-auto w-full whitespace-normal py-3.5 text-center sm:w-auto">
-                <Link href={whatsappUrl} target="_blank" rel="noreferrer noopener">
-                  Agendar minha avaliação pelo WhatsApp
-                  <Image src={whatsappIconImage} alt="" className="h-6 w-6 shrink-0 object-contain" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Card>
-    </motion.div>
-  );
-}
-
-function TreatmentCard({ item }: { item: (typeof treatments)[number] }) {
-  return (
-    <motion.div variants={sectionMotion} whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
-      <Card className="group h-full overflow-hidden border-[#18191c]/8 bg-white transition-shadow duration-300 hover:shadow-[0_16px_40px_rgba(23,24,26,0.1)]">
-        <div className="relative aspect-[4/3] overflow-hidden">
-          <Image
-            src={item.image}
-            alt={item.title}
-            fill
-            sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-            className="object-cover"
-          />
-        </div>
-        <CardHeader>
-          <CardTitle>{item.title}</CardTitle>
-          <CardDescription>{item.description}</CardDescription>
-        </CardHeader>
-        <CardFooter>
-          <Link
-            href="#contato"
-            className="inline-flex items-center gap-2 text-sm font-medium text-[#18191c] underline-offset-4 hover:underline"
-          >
-            Agendar avaliação
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </CardFooter>
-      </Card>
-    </motion.div>
-  );
-}
-
-export default function SiteHome({ reviewsData }: { reviewsData: ReviewsResult }) {
+function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
+    const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -732,424 +311,759 @@ export default function SiteHome({ reviewsData }: { reviewsData: ReviewsResult }
     };
   }, [menuOpen]);
 
+  const solid = scrolled || menuOpen;
+
   return (
-    <div className="relative min-h-screen bg-[linear-gradient(180deg,#e1ddda_0%,#e8e5e2_40%,#e1ddda_100%)]">
-      <SiteHeader scrolled={scrolled} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+    <header
+      className={cn(
+        "fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,box-shadow] duration-300",
+        solid
+          ? "border-line bg-paper/95 shadow-[0_1px_16px_rgba(32,33,36,0.04)] backdrop-blur-[6px]"
+          : "border-transparent bg-transparent",
+      )}
+    >
+      <div className="container-site flex h-[4.5rem] items-center justify-between md:h-20">
+        <Link href="#inicio" aria-label="Odonto Casais — ir para o início" onClick={() => setMenuOpen(false)}>
+          <Image src={logoLockupImage} alt="Odonto Casais" preload className="h-11 w-auto rounded-[5px] md:h-[3.25rem]" />
+        </Link>
 
-      <main className="relative z-10 pt-20 md:pt-24">
-        <section id="inicio" className="scroll-mt-28">
-          <div className="mx-auto grid w-full max-w-7xl gap-10 px-6 pb-16 pt-8 md:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:py-14 xl:py-16">
-            <motion.div initial="hidden" animate="visible" variants={staggerMotion} className="min-w-0 max-w-2xl">
-              <motion.div variants={sectionMotion}>
-                <SectionBadge>Odonto Casais</SectionBadge>
-              </motion.div>
-              <motion.h1 variants={sectionMotion} className="mt-6 font-heading text-5xl font-semibold tracking-tight text-[#18191c] md:text-7xl">
-                Sorrisos saudáveis começam com confiança.
-              </motion.h1>
-              <motion.p variants={sectionMotion} className="mt-6 max-w-xl text-lg leading-8 text-[#4f535b] md:text-xl">
-                Duas unidades em Teófilo Otoni, com dentistas de especialidades diferentes e explicação clara sobre cada tratamento antes de começar.
-              </motion.p>
-              <motion.div variants={sectionMotion} className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-                <Button asChild size="lg">
-                  <Link href={whatsappUrl} target="_blank" rel="noreferrer noopener">
-                    Agende uma avaliação
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
+        <nav aria-label="Principal" className="hidden items-center gap-9 lg:flex">
+          {navItems.map((item) => (
+            <Link key={item.href} href={item.href} className="link-underline text-[0.9375rem] text-ink-soft transition-colors duration-200 hover:text-ink">
+              {item.label}
+            </Link>
+          ))}
+          <Button asChild size="sm" className="ml-1">
+            <ExternalLink href={whatsappUrl}>
+              Agende agora
+              <ArrowRight className="h-4 w-4" />
+            </ExternalLink>
+          </Button>
+        </nav>
+
+        <button
+          type="button"
+          aria-expanded={menuOpen}
+          aria-controls="menu-mobile"
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="flex h-11 items-center gap-3 text-sm font-medium text-ink lg:hidden"
+        >
+          {menuOpen ? "Fechar" : "Menu"}
+          <span aria-hidden="true" className="relative block h-3 w-6">
+            <span className={cn("absolute left-0 h-px w-6 bg-ink transition-all duration-300", menuOpen ? "top-1.5 rotate-45" : "top-0")} />
+            <span className={cn("absolute left-0 h-px w-6 bg-ink transition-all duration-300", menuOpen ? "top-1.5 -rotate-45" : "top-3")} />
+          </span>
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            id="menu-mobile"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-x-0 bottom-0 top-[4.5rem] overflow-y-auto bg-paper md:top-20 lg:hidden"
+          >
+            <nav aria-label="Menu" className="container-site flex min-h-full flex-col pb-10 pt-6">
+              {navItems.map((item) => (
                 <Link
-                  href="#tratamentos"
-                  className="inline-flex items-center gap-2 text-sm font-medium text-[#18191c] underline-offset-4 hover:underline"
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="border-b border-line py-4 font-heading text-[1.75rem] font-medium tracking-[-0.02em] text-ink"
                 >
-                  Conheça nossos tratamentos
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </motion.div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.97, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              className="min-w-0"
-            >
-              <Card className="overflow-hidden border-[#18191c]/8 bg-[#17181a] p-4 shadow-[0_24px_64px_rgba(23,24,26,0.18)] md:p-5">
-                <MediaPlaceholder label="Foto da recepção ou de um consultório em uso" aspect="aspect-[4/3]" dark />
-              </Card>
-            </motion.div>
-          </div>
-        </section>
-
-        <AppDivider />
-
-        <section id="sobre" className="scroll-mt-28 px-6 py-20 md:px-8 md:py-28">
-          <div className="mx-auto max-w-7xl">
-            <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-              <motion.div variants={sectionMotion} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-12% 0px" }} className="min-w-0">
-                <Card className="overflow-hidden border-[#18191c]/8 bg-white p-4 shadow-[0_20px_50px_rgba(23,24,26,0.10)] md:p-5">
-                  <MediaPlaceholder label="Foto da fachada ou da recepção da clínica" aspect="aspect-[4/3]" />
-                </Card>
-              </motion.div>
-              <div className="min-w-0">
-                <SectionHeading
-                  eyebrow="Sobre a clínica"
-                  title="Especialidades diferentes, num só lugar."
-                  description="A Odonto Casais reúne dentistas de dentística, prótese, ortodontia, endodontia e implantodontia, para que cada paciente encontre o profissional certo para o seu caso sem precisar procurar em vários lugares."
-                />
-                <motion.div variants={sectionMotion} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-12% 0px" }} className="mt-5 text-[#4f535b]">
-                  <p className="text-base leading-8 md:text-lg">
-                    Atendemos em duas unidades no Centro de Teófilo Otoni, de segunda a sábado.
-                  </p>
-                </motion.div>
-                <motion.div
-                  variants={sectionMotion}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, margin: "-12% 0px" }}
-                  className="mt-8 flex flex-wrap gap-x-10 gap-y-6 border-t border-[#18191c]/10 pt-6"
-                >
-                  {stats.map((item, index) => (
-                    <div key={item.label} className={cn("flex items-baseline gap-3", index !== 0 && "border-l border-[#18191c]/10 pl-10")}>
-                      <p className="font-heading text-4xl font-semibold tracking-tight text-[#18191c]">
-                        <AnimatedCounter value={item.value} suffix={item.value === 100 ? "%" : "+"} />
-                      </p>
-                      <p className="max-w-[9rem] text-sm leading-5 text-[#50545e]">{item.label}</p>
-                    </div>
-                  ))}
-                </motion.div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <AppDivider />
-
-        <section id="equipe" className="scroll-mt-28 px-6 py-16 md:px-8 md:py-24">
-          <div className="mx-auto max-w-7xl">
-            <motion.div
-              variants={sectionMotion}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-10% 0px" }}
-              className="mx-auto max-w-2xl text-center"
-            >
-              <SectionBadge>Nossa equipe</SectionBadge>
-              <h2 className="mt-5 font-heading text-4xl font-semibold tracking-tight text-[#18191c] md:text-6xl">
-                Quem vai cuidar do seu sorriso
-              </h2>
-              <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-[#4f535b] md:text-lg">
-                Três dentistas, cada um com uma especialidade. Você é atendido por quem entende do seu caso.
-              </p>
-            </motion.div>
-
-            <motion.div
-              variants={staggerMotion}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-10% 0px" }}
-              className="mx-auto mt-10 grid max-w-5xl grid-cols-1 items-start gap-5 md:grid-cols-2"
-            >
-              {team.map((member) => (
-                <motion.div key={member.name} variants={sectionMotion} whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
-                  <TeamPortrait {...member} />
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
-
-        <AppDivider />
-
-        <section id="essencia" className="scroll-mt-28 px-6 py-16 md:px-8 md:py-20">
-          <div className="mx-auto max-w-7xl">
-            <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-              <motion.div variants={sectionMotion} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-12% 0px" }} className="min-w-0">
-                <MediaPlaceholder label="Foto da área de espera ou de um consultório" aspect="aspect-[4/3]" />
-              </motion.div>
-              <div className="min-w-0">
-                <SectionBadge>Nossa essência</SectionBadge>
-                <h2 className="mt-5 font-heading text-3xl font-semibold tracking-tight text-[#18191c] md:text-4xl">
-                  O que guia o nosso trabalho todos os dias.
-                </h2>
-                <p className="mt-4 text-base leading-8 text-[#4f535b] md:text-lg">{essenceParagraph}</p>
-                <ul className="mt-8 grid gap-5 sm:grid-cols-3">
-                  {principles.map((item) => (
-                    <li key={item.title}>
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#81756c]">{item.title}</p>
-                      <p className="mt-2 text-sm leading-6 text-[#4f535b]">{item.description}</p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="diferenciais" className="scroll-mt-28 px-6 py-16 md:px-8">
-          <div className="mx-auto max-w-7xl">
-            <SectionHeading
-              eyebrow="Diferenciais"
-              title="O que sustenta o nosso atendimento."
-              description="Três coisas que fazem diferença no dia a dia do consultório, além do procedimento em si."
-            />
-            <motion.div variants={staggerMotion} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-10% 0px" }} className="mt-10 grid gap-8 md:grid-cols-3 md:gap-6">
-              {differentials.map((item) => (
-                <motion.div key={item.number} variants={sectionMotion} className="border-t border-[#18191c]/10 pt-6">
-                  <span className="font-heading text-sm font-semibold text-[#81756c]">{item.number}</span>
-                  <h3 className="mt-3 text-lg font-semibold text-[#18191c]">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-[#4f535b]">{item.description}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
-
-        <section id="tratamentos" className="scroll-mt-28 px-6 py-20 md:px-8 md:py-28">
-          <div className="mx-auto max-w-7xl">
-            <SectionHeading
-              eyebrow="Tratamentos"
-              title="Tratamentos que realizamos com mais frequência."
-              description="Do clareamento à reabilitação completa. Fale com a equipe para saber qual se aplica ao seu caso."
-            />
-            <motion.div
-              variants={staggerMotion}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-10% 0px" }}
-              className="mt-10"
-            >
-              <FeaturedTreatmentCard item={featuredTreatment} />
-            </motion.div>
-
-            <motion.div
-              variants={staggerMotion}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-10% 0px" }}
-              className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3"
-            >
-              {treatments.map((item) => (
-                <TreatmentCard key={item.title} item={item} />
-              ))}
-            </motion.div>
-          </div>
-        </section>
-
-        <section id="antes-e-depois" className="scroll-mt-28 px-6 py-16 md:px-8 md:py-20">
-          <div className="mx-auto max-w-7xl">
-            <SectionHeading
-              eyebrow="Resultado real"
-              title={`${beforeAfterCase.treatment.charAt(0).toUpperCase()}${beforeAfterCase.treatment.slice(1)}: um caso real.`}
-              description="Fotos do mesmo paciente, com autorização para divulgação."
-            />
-            <motion.div
-              variants={sectionMotion}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-10% 0px" }}
-              className="mx-auto mt-10 max-w-3xl"
-            >
-              <Card className="overflow-hidden border-[#18191c]/8 bg-white p-4 shadow-[0_24px_60px_rgba(23,24,26,0.12)] md:p-6">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <div className="relative aspect-[9/16] overflow-hidden rounded-[18px]">
-                      <Image src={beforeAfterCase.before} alt={`${beforeAfterCase.treatment} - antes`} fill className="object-cover" />
-                    </div>
-                    <p className="mt-3 text-center text-xs font-semibold uppercase tracking-[0.22em] text-[#81756c]">Antes</p>
-                  </div>
-                  <div>
-                    <div className="relative aspect-[9/16] overflow-hidden rounded-[18px]">
-                      <Image src={beforeAfterCase.after} alt={`${beforeAfterCase.treatment} - depois`} fill className="object-cover" />
-                    </div>
-                    <p className="mt-3 text-center text-xs font-semibold uppercase tracking-[0.22em] text-[#81756c]">Depois</p>
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-          </div>
-        </section>
-
-        <section id="depoimentos" className="scroll-mt-28 px-6 py-20 md:px-8 md:py-28">
-          <GoogleReviewsStructuredData summary={reviewsData.summary} reviews={reviewsData.reviews} />
-          <div className="mx-auto max-w-7xl">
-            <SectionHeading
-              eyebrow="Avaliações dos pacientes"
-              title="O que os pacientes dizem no Google."
-              description="Avaliações reais, sem edição, de quem já passou pela Odonto Casais."
-            />
-            <motion.div
-              variants={sectionMotion}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-10% 0px" }}
-              className="mt-6"
-            >
-              <GoogleReviewsSummary summary={reviewsData.summary} />
-            </motion.div>
-            {reviewsData.reviews.length > 0 && (
-              <div className="mt-10">
-                <GoogleReviewsCarousel reviews={reviewsData.reviews} />
-              </div>
-            )}
-          </div>
-        </section>
-
-        <section id="depoimentos-video" className="scroll-mt-28 px-6 py-20 md:px-8 md:py-28">
-          <div className="mx-auto max-w-7xl">
-            <SectionHeading
-              eyebrow="Depoimentos em vídeo"
-              title="Experiências de quem já passou pela Odonto Casais."
-              description="Relatos gravados por pacientes que autorizaram o uso da imagem."
-              align="center"
-            />
-            <motion.div
-              variants={staggerMotion}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-10% 0px" }}
-              className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-            >
-              {videoTestimonials.map((item, index) => (
-                <VideoTestimonialCard key={item.video ?? `pendente-${index}`} item={item} />
-              ))}
-            </motion.div>
-          </div>
-        </section>
-
-        <section id="contato" className="scroll-mt-28 px-6 pb-20 pt-6 md:px-8 md:pb-28">
-          <div className="mx-auto max-w-7xl">
-            <SectionHeading eyebrow="Contato" title="Fale com a gente." description="WhatsApp, endereços das duas unidades e horário de atendimento." />
-            <div className="mt-10 grid items-start gap-5 xl:grid-cols-[0.95fr_1.05fr]">
-              <div className="grid gap-5">
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <Card className="transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(23,24,26,0.12)]">
-                    <CardHeader>
-                      <Image src={whatsappIconImage} alt="" className="h-12 w-12 object-contain" />
-                      <CardTitle className="mt-4 text-lg">WhatsApp</CardTitle>
-                      <CardDescription>(33) 99866-9729</CardDescription>
-                    </CardHeader>
-                  </Card>
-                  <Card className="transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(23,24,26,0.12)]">
-                    <CardHeader>
-                      <Image src={clockIconImage} alt="" className="h-12 w-12 object-contain" />
-                      <CardTitle className="mt-4 text-lg">Horário</CardTitle>
-                      <CardDescription>Segunda a sexta, 08h às 18h · Sábado, 08h às 12h</CardDescription>
-                    </CardHeader>
-                  </Card>
-                </div>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  {clinicLocations.map((location) => (
-                    <Card key={location.name} className="transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(23,24,26,0.12)]">
-                      <CardHeader>
-                        <Image src={mapsIconImage} alt="" className="h-12 w-12 object-contain" />
-                        <CardTitle className="mt-4 text-lg">{location.name}</CardTitle>
-                        <CardDescription>{location.address}</CardDescription>
-                      </CardHeader>
-                      <CardContent className="flex flex-wrap gap-3">
-                        <Button asChild variant="secondary" size="sm">
-                          <Link href={getGoogleMapsSearchUrl(location.address)} target="_blank" rel="noreferrer noopener">
-                            Como chegar
-                          </Link>
-                        </Button>
-                        <Button asChild size="sm">
-                          <Link href={whatsappUrl} target="_blank" rel="noreferrer noopener">
-                            Agendar
-                          </Link>
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-                <Card className="transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(23,24,26,0.12)]">
-                  <CardHeader>
-                    <Image src={instagramIconImage} alt="" className="h-12 w-12 object-contain" />
-                    <CardTitle className="mt-4 text-lg">Instagram</CardTitle>
-                    <CardDescription>Bastidores e novidades das duas unidades.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid gap-3 sm:grid-cols-2">
-                    <Link
-                      href="https://www.instagram.com/odontocasais/"
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      className="flex items-center justify-between gap-3 rounded-2xl border border-[#18191c]/10 bg-white/60 px-4 py-3 text-sm font-medium text-[#18191c] transition hover:border-[#18191c]/25 hover:bg-white"
-                    >
-                      @odontocasais
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                    <Link
-                      href="https://www.instagram.com/clinica.odontocasais/"
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      className="flex items-center justify-between gap-3 rounded-2xl border border-[#18191c]/10 bg-white/60 px-4 py-3 text-sm font-medium text-[#18191c] transition hover:border-[#18191c]/25 hover:bg-white"
-                    >
-                      @clinica.odontocasais
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </CardContent>
-                </Card>
-              </div>
-              <MapPlaceholder />
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="relative z-10 border-t border-[#18191c]/8 bg-[#e0dcda]/85 px-6 py-12 backdrop-blur-sm md:px-8">
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.1fr_0.7fr_0.7fr_1fr]">
-          <div>
-            <BrandMark />
-            <p className="mt-4 max-w-xs text-sm leading-7 text-[#525660]">
-              Duas unidades no Centro de Teófilo Otoni/MG, com dentistas de especialidades diferentes.
-            </p>
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              {socialLinks.map((social) => (
-                <SocialLink key={social.label} {...social} />
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#81756c]">Navegação</p>
-            <div className="mt-4 flex flex-col gap-2 text-sm">
-              {footerLinks.map((item) => (
-                <Link key={item.label} href={item.href} className="text-[#525660] transition hover:text-[#18191c]">
                   {item.label}
                 </Link>
               ))}
-            </div>
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#81756c]">Tratamentos</p>
-            <div className="mt-4 flex flex-col gap-2 text-sm">
-              <Link href="#tratamentos" className="text-[#525660] transition hover:text-[#18191c]">
-                {featuredTreatment.title}
-              </Link>
-              {treatments.map((item) => (
-                <Link key={item.title} href="#tratamentos" className="text-[#525660] transition hover:text-[#18191c]">
-                  {item.title}
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#81756c]">Contato</p>
-            <div className="mt-4 flex flex-col gap-3 text-sm text-[#525660]">
-              <Link href={whatsappUrl} target="_blank" rel="noreferrer noopener" className="transition hover:text-[#18191c]">
-                (33) 99866-9729
-              </Link>
-              {clinicLocations.map((location) => (
-                <p key={location.name}>
-                  <span className="block font-medium text-[#3d414a]">{location.name}</span>
-                  {location.address}
+              <div className="mt-auto pt-10">
+                <Button asChild size="lg" className="w-full">
+                  <ExternalLink href={whatsappUrl} onClick={() => setMenuOpen(false)}>
+                    Agende sua avaliação
+                    <ArrowRight className="h-4 w-4" />
+                  </ExternalLink>
+                </Button>
+                <p className="mt-6 text-sm leading-6 text-muted">
+                  WhatsApp {whatsappDisplay}
+                  <br />
+                  Duas unidades no Centro de Teófilo Otoni
                 </p>
+              </div>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
+  );
+}
+
+function Hero({ summary }: { summary: ReviewsResult["summary"] }) {
+  const trustItems = [
+    { title: "Duas unidades", detail: "no Centro de Teófilo Otoni" },
+    { title: "Especialistas", detail: "em diferentes áreas da odontologia" },
+    ...(summary.isLive && summary.totalReviews > 0
+      ? [
+          {
+            title: `${summary.averageRating.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} no Google`,
+            detail: `${summary.totalReviews.toLocaleString("pt-BR")} avaliações de pacientes`,
+          },
+        ]
+      : []),
+  ];
+
+  return (
+    <section id="inicio" className="pt-[4.5rem] md:pt-20">
+      <div className="container-site grid gap-10 pb-16 pt-8 md:pb-20 md:pt-12 lg:grid-cols-12 lg:items-end lg:gap-x-10 lg:pb-24 lg:pt-10">
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="lg:col-span-7 lg:pb-2"
+        >
+          <Eyebrow>
+            <span>
+              <span className="hidden sm:inline">Clínica odontológica · </span>Teófilo Otoni, MG
+            </span>
+          </Eyebrow>
+          <h1 className="mt-6 max-w-[11em] font-heading text-[clamp(2.5rem,4.6vw,4rem)] font-medium leading-[1.04] tracking-[-0.035em] text-ink">
+            Sorrisos saudáveis começam com confiança.
+          </h1>
+          <p className="mt-6 max-w-[33rem] text-[1.0625rem] leading-[1.7] text-muted md:text-lg">
+            Dentistas de especialidades diferentes, em duas unidades no Centro de Teófilo Otoni — e explicação clara sobre cada tratamento antes de começar.
+          </p>
+
+          <div className="mt-9 flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8">
+            <Button asChild size="lg" className="w-full sm:w-auto">
+              <ExternalLink href={whatsappUrl}>
+                Agende uma avaliação
+                <ArrowRight className="h-4 w-4" />
+              </ExternalLink>
+            </Button>
+            <Link href="#tratamentos" className="link-underline-static self-center text-[0.9375rem] text-ink-soft hover:opacity-70 sm:self-auto">
+              Conheça nossos tratamentos
+            </Link>
+          </div>
+
+          <dl className={cn("mt-12 grid gap-x-8 gap-y-4 border-t border-line pt-6 text-sm sm:mt-14", trustItems.length === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
+            {trustItems.map((item) => (
+              <div key={item.title} className="flex flex-wrap gap-x-1.5 sm:block">
+                <dt className="font-medium text-ink">{item.title}</dt>
+                <dd className="leading-snug text-muted sm:mt-0.5">{item.detail}</dd>
+              </div>
+            ))}
+          </dl>
+        </motion.div>
+
+        <motion.figure
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          className="group lg:col-span-5 lg:col-start-8"
+        >
+          <Photo
+            src={photos.hero.src}
+            alt={photos.hero.alt}
+            position={photos.hero.position}
+            preload
+            sizes="(min-width: 1024px) 42vw, 100vw"
+            className="aspect-[4/5] sm:aspect-[5/4] lg:aspect-auto lg:h-[min(76vh,680px)]"
+          />
+          <figcaption className="mt-3 flex justify-between gap-4 text-[0.8125rem] text-muted">
+            <span>{photos.hero.caption}</span>
+            <span>{photos.hero.detail}</span>
+          </figcaption>
+        </motion.figure>
+      </div>
+    </section>
+  );
+}
+
+function AboutSection() {
+  return (
+    <section id="sobre" className="border-t border-line py-20 md:py-28 lg:py-32">
+      <div className="container-site">
+        <Reveal className="grid gap-6 lg:grid-cols-12 lg:gap-x-10">
+          <Eyebrow className="lg:col-span-3 lg:pt-4">Sobre a clínica</Eyebrow>
+          <SectionTitle className="max-w-[16ch] lg:col-span-9 lg:text-[clamp(2.5rem,4.4vw,4rem)]">
+            Especialidades diferentes, num só lugar.
+          </SectionTitle>
+        </Reveal>
+
+        <div className="mt-12 grid gap-12 md:mt-16 lg:grid-cols-12 lg:gap-x-10">
+          <Reveal className="group lg:col-span-5">
+            <Photo
+              src={photos.about.src}
+              alt={photos.about.alt}
+              position={photos.about.position}
+              sizes="(min-width: 1024px) 40vw, 100vw"
+              className="aspect-[4/3] sm:aspect-[16/10] lg:aspect-[4/5]"
+            />
+            <dl className="mt-6 grid grid-cols-2 gap-6">
+              {clinicFigures.map((item) => (
+                <div key={item.label}>
+                  <dt className="sr-only">{item.label}</dt>
+                  <dd className="font-heading text-[2rem] font-medium leading-none tracking-[-0.03em] text-ink">{item.value}</dd>
+                  <dd className="mt-2 text-sm text-muted">{item.label}</dd>
+                </div>
+              ))}
+            </dl>
+          </Reveal>
+
+          <Reveal className="lg:col-span-6 lg:col-start-7" delay={0.08}>
+            <p className="text-[1.1875rem] leading-[1.65] text-ink-soft md:text-xl">{aboutParagraphs[0]}</p>
+            <p className="mt-5 max-w-[36rem] text-base leading-[1.75] text-muted">{aboutParagraphs[1]}</p>
+
+            <dl className="mt-12 border-b border-line">
+              {aboutHighlights.map((item) => (
+                <div key={item.title} className="grid gap-1 border-t border-line py-5 sm:grid-cols-[12rem_1fr] sm:gap-6">
+                  <dt className="font-medium text-ink">{item.title}</dt>
+                  <dd className="text-[0.9375rem] leading-relaxed text-muted">{item.description}</dd>
+                </div>
+              ))}
+            </dl>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SaibaMais({ treatment, className }: { treatment: string; className?: string }) {
+  return (
+    <ExternalLink
+      href={getWhatsappUrl(`Olá, gostaria de saber mais sobre ${treatment.toLowerCase()} na Odonto Casais.`)}
+      className={cn("group/link inline-flex items-center gap-2 text-[0.9375rem] font-medium text-ink", className)}
+    >
+      <span className="link-underline-static">Saiba mais</span>
+      <ArrowRight aria-hidden="true" className="h-4 w-4 transition-transform duration-300 group-hover/link:translate-x-[3px]" />
+      <span className="sr-only">sobre {treatment} pelo WhatsApp</span>
+    </ExternalLink>
+  );
+}
+
+function TreatmentsSection() {
+  const [veneers, implants] = featuredTreatments;
+
+  return (
+    <section id="tratamentos" className="bg-sand py-20 md:py-28 lg:py-32">
+      <div className="container-site">
+        <Reveal className="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-x-10">
+          <div className="lg:col-span-7">
+            <Eyebrow>Tratamentos</Eyebrow>
+            <SectionTitle className="mt-5 max-w-[18ch]">Os tratamentos que mais realizamos.</SectionTitle>
+          </div>
+          <div className="lg:col-span-4 lg:col-start-9">
+            <p className="text-[0.9375rem] leading-relaxed text-muted">
+              {allTreatmentTitles.join(", ")}. Cada um começa por uma avaliação.
+            </p>
+            <ExternalLink href={whatsappQuestionUrl} className="link-underline-static mt-3 inline-block text-[0.9375rem] text-ink hover:opacity-70">
+              Não encontrou o seu caso? Pergunte à equipe
+            </ExternalLink>
+          </div>
+        </Reveal>
+
+        <article id={veneers.id} className="mt-14 grid gap-10 md:mt-20 lg:grid-cols-12 lg:items-center lg:gap-x-10">
+          <Reveal className="lg:col-span-7">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+              {[
+                { src: tratamentoAntesImage, label: "Antes", position: "50% 58%" },
+                { src: tratamentoDepoisImage, label: "Depois", position: "50% 47%" },
+              ].map((item) => (
+                <figure key={item.label} className="group">
+                  <Photo
+                    src={item.src}
+                    alt={`${veneers.title} — ${item.label.toLowerCase()} do tratamento`}
+                    position={item.position}
+                    sizes="(min-width: 1024px) 28vw, 50vw"
+                    className="aspect-[4/5]"
+                  />
+                  <figcaption className="mt-2.5 text-[0.8125rem] text-muted">{item.label}</figcaption>
+                </figure>
               ))}
             </div>
-          </div>
-        </div>
-        <div className="mx-auto mt-10 max-w-7xl border-t border-[#18191c]/8 pt-6 text-sm text-[#565b66]">
-          <p>© 2026 Odonto Casais. Todos os direitos reservados.</p>
-        </div>
-      </footer>
+            <p className="mt-3 text-xs text-muted/80">Caso real de paciente da clínica, fotos publicadas com autorização.</p>
+          </Reveal>
 
-      <FloatingWhatsApp />
+          <Reveal className="lg:col-span-5 lg:pl-6" delay={0.08}>
+            <p className="text-[0.8125rem] text-bronze">Em destaque</p>
+            <h3 className="mt-3 font-heading text-[clamp(1.75rem,2.6vw,2.375rem)] font-medium leading-[1.12] tracking-[-0.025em] text-ink">
+              {veneers.title}
+            </h3>
+            <p className="mt-5 text-base leading-[1.75] text-muted">{veneers.description}</p>
+            <p className="mt-5 text-sm text-ink-soft">Corrige: {veneers.points.join(" · ")}</p>
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-6 border-t border-line pt-6">
+              <ProfessionalTag member={veneers.professional} />
+              <SaibaMais treatment={veneers.title} />
+            </div>
+          </Reveal>
+        </article>
+
+        <article id={implants.id} className="mt-20 grid gap-10 md:mt-28 lg:grid-cols-12 lg:items-center lg:gap-x-10">
+          <Reveal className="group lg:order-2 lg:col-span-7 lg:col-start-6">
+            <Photo src={implants.image} alt={implants.imageAlt} sizes="(min-width: 1024px) 55vw, 100vw" className="aspect-[3/2]" />
+          </Reveal>
+          <Reveal className="lg:order-1 lg:col-span-5 lg:col-start-1 lg:pr-6" delay={0.08}>
+            <p className="text-[0.8125rem] text-bronze">Em destaque</p>
+            <h3 className="mt-3 font-heading text-[clamp(1.75rem,2.6vw,2.375rem)] font-medium leading-[1.12] tracking-[-0.025em] text-ink">
+              {implants.title}
+            </h3>
+            <p className="mt-5 text-base leading-[1.75] text-muted">{implants.description}</p>
+            <p className="mt-5 text-sm text-ink-soft">{implants.points.join(" · ")}</p>
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-6 border-t border-line pt-6">
+              <ProfessionalTag member={implants.professional} />
+              <SaibaMais treatment={implants.title} />
+            </div>
+          </Reveal>
+        </article>
+
+        <Reveal className="mt-20 md:mt-28">
+          <h3 className="text-[0.8125rem] text-muted">Também realizamos</h3>
+          <ul className="mt-4 border-b border-ink/15">
+            {otherTreatments.map((item) => (
+              <li key={item.title} className="grid gap-3 border-t border-ink/15 py-7 md:grid-cols-12 md:items-baseline md:gap-x-10">
+                <h4 className="font-heading text-[1.5rem] font-medium tracking-[-0.02em] text-ink md:col-span-4 md:text-[1.75rem]">{item.title}</h4>
+                <p className="max-w-[34rem] text-[0.9375rem] leading-relaxed text-muted md:col-span-5">
+                  {item.description}
+                  <span className="mt-1 block text-ink-soft">Com {item.professional.name}</span>
+                </p>
+                <SaibaMais treatment={item.title} className="md:col-span-3 md:justify-self-end" />
+              </li>
+            ))}
+          </ul>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function TeamMemberProfile({ member, className }: { member: TeamMember; className?: string }) {
+  return (
+    <article className={cn("group", className)}>
+      <Photo
+        src={member.image}
+        alt={`Retrato de ${member.name}`}
+        position={member.position}
+        sizes="(min-width: 768px) 30vw, 80vw"
+        className="aspect-[4/5]"
+      />
+      <h3 className="mt-6 font-heading text-[1.375rem] font-medium tracking-[-0.02em] text-ink">{member.name}</h3>
+      <p className="mt-1 text-sm text-bronze">{member.role}</p>
+      <p className="mt-4 text-[0.9375rem] leading-relaxed text-muted">{member.summary}</p>
+      <p className="mt-4 text-xs tracking-[0.04em] text-muted">{member.cro}</p>
+      <details className="group/bio mt-4 border-t border-line pt-3">
+        <summary className="flex cursor-pointer list-none items-center justify-between text-sm text-ink-soft marker:hidden [&::-webkit-details-marker]:hidden">
+          Apresentação completa
+          <span aria-hidden="true" className="text-lg leading-none transition-transform duration-300 group-open/bio:rotate-45">
+            +
+          </span>
+        </summary>
+        <p className="pt-3 text-sm leading-relaxed text-muted">{member.bio}</p>
+      </details>
+    </article>
+  );
+}
+
+function TeamSection() {
+  return (
+    <section id="equipe" className="py-20 md:py-28 lg:py-32">
+      <div className="container-site">
+        <Reveal className="grid gap-6 lg:grid-cols-12 lg:items-end lg:gap-x-10">
+          <div className="lg:col-span-7">
+            <Eyebrow>Equipe</Eyebrow>
+            <SectionTitle className="mt-5 max-w-[16ch]">Quem vai cuidar do seu sorriso.</SectionTitle>
+          </div>
+          <p className="max-w-[26rem] text-base leading-relaxed text-muted lg:col-span-4 lg:col-start-9">
+            Três dentistas, cada um com uma especialidade. Você é atendido por quem entende do seu caso.
+          </p>
+        </Reveal>
+
+        <Reveal className="no-scrollbar -mx-5 mt-12 flex scroll-px-5 snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-2 md:mx-0 md:mt-16 md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:px-0 lg:gap-10">
+          {team.map((member, index) => (
+            <TeamMemberProfile
+              key={member.name}
+              member={member}
+              className={cn("w-[80%] shrink-0 snap-start sm:w-[46%] md:w-auto", index === 1 && "md:mt-16")}
+            />
+          ))}
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function GoogleRatingSummary({ summary }: { summary: ReviewsResult["summary"] }) {
+  return (
+    <div className="border-t border-ink/15 pt-6">
+      <div className="flex items-end gap-4">
+        <span className="font-heading text-[3.5rem] font-medium leading-none tracking-[-0.04em] text-ink">
+          {summary.averageRating.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+        </span>
+        <span className="pb-1.5">
+          <StarRow rating={summary.averageRating} />
+          <span className="mt-1.5 flex items-center gap-1.5 text-sm text-muted">
+            <GoogleLogo className="h-3.5 w-3.5" />
+            {summary.totalReviews.toLocaleString("pt-BR")} avaliações no Google
+          </span>
+        </span>
+      </div>
+      <ExternalLink href={summary.profileUrl} className="mt-5 inline-flex items-center gap-1.5 text-sm text-ink">
+        <span className="link-underline-static">Ler as avaliações no Google</span>
+        <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+      </ExternalLink>
     </div>
+  );
+}
+
+function ReviewsSection({ reviewsData }: { reviewsData: ReviewsResult }) {
+  const { summary, reviews } = reviewsData;
+  const hasRating = summary.isLive && summary.totalReviews > 0;
+
+  // Quando o Google devolve só a nota (sem textos), a seção fica com a nota e o vídeo.
+  if (reviews.length === 0) {
+    return (
+      <section id="depoimentos" className="bg-sand py-20 md:py-28 lg:py-32">
+        <GoogleReviewsStructuredData summary={summary} reviews={reviews} />
+        <div className="container-site grid gap-14 lg:grid-cols-12 lg:items-center lg:gap-x-10">
+          <Reveal className="lg:col-span-6">
+            <Eyebrow>Depoimentos</Eyebrow>
+            <SectionTitle className="mt-5 max-w-[14ch]">O que os pacientes dizem.</SectionTitle>
+            <p className="mt-6 max-w-[30rem] text-base leading-[1.75] text-muted">
+              As avaliações da Odonto Casais ficam públicas no Google, escritas por quem já foi atendido nas nossas unidades.
+            </p>
+            {hasRating && (
+              <div className="mt-10 max-w-[26rem]">
+                <GoogleRatingSummary summary={summary} />
+              </div>
+            )}
+          </Reveal>
+          <Reveal className="lg:col-span-5 lg:col-start-8" delay={0.08}>
+            <figure className="mx-auto max-w-[20rem] lg:mx-0">
+              <VideoTestimonial />
+            </figure>
+          </Reveal>
+        </div>
+      </section>
+    );
+  }
+
+  const [pullQuote, ...rest] = reviews;
+  const gridReviews = rest.slice(0, 4);
+
+  return (
+    <section id="depoimentos" className="bg-sand py-20 md:py-28 lg:py-32">
+      <GoogleReviewsStructuredData summary={summary} reviews={reviews} />
+      <div className="container-site grid gap-14 lg:grid-cols-12 lg:gap-x-10">
+        <Reveal className="lg:col-span-4">
+          <Eyebrow>Depoimentos</Eyebrow>
+          <SectionTitle className="mt-5 max-w-[14ch]">O que os pacientes dizem.</SectionTitle>
+
+          {hasRating && (
+            <div className="mt-10">
+              <GoogleRatingSummary summary={summary} />
+            </div>
+          )}
+
+          <figure className="mt-12 hidden max-w-[17rem] lg:block">
+            <VideoTestimonial />
+          </figure>
+        </Reveal>
+
+        <div className="lg:col-span-8 lg:col-start-5 lg:pl-6">
+          <Reveal>
+            <figure>
+              <StarRow rating={pullQuote.rating} />
+              <blockquote className="mt-5 font-heading text-[clamp(1.5rem,2.4vw,2.125rem)] font-normal leading-[1.3] tracking-[-0.02em] text-ink">
+                &ldquo;{pullQuote.text}&rdquo;
+              </blockquote>
+              <figcaption className="mt-6 flex items-center gap-3 text-sm">
+                <span className="font-medium text-ink">{pullQuote.authorName}</span>
+                <span className="text-muted">{pullQuote.relativeTime}</span>
+                <span className="flex items-center gap-1.5 text-xs text-muted">
+                  <GoogleLogo className="h-3.5 w-3.5" />
+                  Google
+                </span>
+              </figcaption>
+            </figure>
+          </Reveal>
+
+          {gridReviews.length > 0 && (
+            <div className="mt-14 grid gap-10 sm:grid-cols-2 sm:gap-x-10">
+              {gridReviews.map((review, index) => (
+                <Reveal key={review.id} delay={(index % 2) * 0.06}>
+                  <GoogleReviewCard review={review} className="h-full" />
+                </Reveal>
+              ))}
+            </div>
+          )}
+
+          <figure className="mt-14 max-w-[17rem] lg:hidden">
+            <VideoTestimonial />
+          </figure>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function VideoTestimonial() {
+  return (
+    <>
+      <div className="relative aspect-[9/16] overflow-hidden rounded-[3px] bg-ink">
+        <video
+          src={`${videoTestimonial.video}#t=0.5`}
+          controls
+          preload="metadata"
+          playsInline
+          className="h-full w-full object-cover"
+        >
+          Seu navegador não suporta vídeos.
+        </video>
+      </div>
+      <figcaption className="mt-3 text-[0.8125rem] leading-snug text-muted">
+        Depoimento em vídeo de paciente · {videoTestimonial.treatment}
+      </figcaption>
+    </>
+  );
+}
+
+function BookingSection() {
+  return (
+    <section aria-labelledby="agendar-titulo" className="bg-slate text-paper">
+      <div className="container-site grid gap-12 py-20 md:py-28 lg:grid-cols-12 lg:items-end lg:gap-x-10">
+        <Reveal className="lg:col-span-7">
+          <Eyebrow tone="light">Agendamento</Eyebrow>
+          <h2 id="agendar-titulo" className="mt-6 max-w-[17ch] font-heading text-[clamp(2.1rem,4vw,3.5rem)] font-medium leading-[1.08] tracking-[-0.03em]">
+            Vamos entender qual tratamento faz sentido para você.
+          </h2>
+          <p className="mt-6 max-w-[32rem] text-base leading-[1.75] text-paper/70 md:text-[1.0625rem]">
+            Na avaliação, o dentista examina, explica as opções com calma e você decide o próximo passo sem pressa.
+          </p>
+          <div className="mt-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8">
+            <Button asChild variant="light" size="lg" className="w-full sm:w-auto">
+              <ExternalLink href={whatsappUrl}>
+                Agendar avaliação
+                <ArrowRight className="h-4 w-4" />
+              </ExternalLink>
+            </Button>
+            <ExternalLink href={whatsappQuestionUrl} className="link-underline-static self-center text-[0.9375rem] text-paper/85 hover:opacity-70 sm:self-auto">
+              Falar pelo WhatsApp
+            </ExternalLink>
+          </div>
+        </Reveal>
+
+        <Reveal className="lg:col-span-4 lg:col-start-9" delay={0.08}>
+          <dl className="grid gap-6 border-t border-paper/15 pt-6 text-sm sm:grid-cols-2 lg:grid-cols-1">
+            <div>
+              <dt className="text-paper/55">Horário</dt>
+              {openingHours.map((item) => (
+                <dd key={item.days} className="mt-1 text-paper">
+                  {item.days}, {item.hours}
+                </dd>
+              ))}
+            </div>
+            <div>
+              <dt className="text-paper/55">WhatsApp</dt>
+              <dd className="mt-1 text-paper">{whatsappDisplay}</dd>
+            </div>
+          </dl>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function LocationsSection() {
+  return (
+    <section id="contato" className="py-20 md:py-28 lg:py-32">
+      <div className="container-site">
+        <Reveal className="grid gap-6 lg:grid-cols-12 lg:items-end lg:gap-x-10">
+          <div className="lg:col-span-7">
+            <Eyebrow>Unidades</Eyebrow>
+            <SectionTitle className="mt-5 max-w-[18ch]">Duas unidades no Centro de Teófilo Otoni.</SectionTitle>
+          </div>
+          <p className="text-base leading-relaxed text-muted lg:col-span-4 lg:col-start-9">
+            O mesmo WhatsApp atende as duas unidades. Escolha a que fica mais perto de você.
+          </p>
+        </Reveal>
+
+        <div className="mt-12 grid gap-16 md:mt-16 md:grid-cols-2 md:gap-10 lg:gap-16">
+          {clinicLocations.map((location, index) => {
+            const address = getFullAddress(location);
+            return (
+              <Reveal key={location.name} delay={index * 0.08}>
+                <article className="border-t border-ink pt-6">
+                  <p className="text-[0.8125rem] text-muted">Unidade {String(index + 1).padStart(2, "0")}</p>
+                  <h3 className="mt-2 font-heading text-[1.75rem] font-medium tracking-[-0.02em] text-ink md:text-[2rem]">{location.name}</h3>
+
+                  <dl className="mt-8 grid gap-5 text-[0.9375rem] sm:grid-cols-2">
+                    <div>
+                      <dt className="text-sm text-muted">Endereço</dt>
+                      <dd className="mt-1 leading-relaxed text-ink">
+                        {location.street}
+                        <br />
+                        {location.district}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-muted">Horário</dt>
+                      {openingHours.map((item) => (
+                        <dd key={item.days} className="mt-1 leading-relaxed text-ink">
+                          {item.days}, {item.hours}
+                        </dd>
+                      ))}
+                    </div>
+                    <div>
+                      <dt className="text-sm text-muted">Telefone e WhatsApp</dt>
+                      <dd className="mt-1 text-ink">
+                        <a href={`tel:+${whatsappNumber}`} className="link-underline">
+                          {whatsappDisplay}
+                        </a>
+                      </dd>
+                    </div>
+                  </dl>
+
+                  <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                    <Button asChild>
+                      <ExternalLink href={getWhatsappUrl(`Olá, gostaria de agendar uma avaliação na ${location.name} da Odonto Casais.`)}>
+                        Agendar nesta unidade
+                        <ArrowRight className="h-4 w-4" />
+                      </ExternalLink>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <ExternalLink href={getDirectionsUrl(address)}>
+                        Como chegar
+                        <ArrowUpRight className="h-4 w-4" />
+                      </ExternalLink>
+                    </Button>
+                  </div>
+
+                  {googleMapsApiKey && (
+                    <div className="relative mt-10 aspect-[16/10] overflow-hidden rounded-[3px] bg-stone">
+                      <iframe
+                        src={`https://www.google.com/maps/embed/v1/place?key=${googleMapsApiKey}&q=${encodeURIComponent(address)}&zoom=16`}
+                        title={`Mapa da ${location.name}`}
+                        className="absolute inset-0 h-full w-full border-0 grayscale-[0.35]"
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        allowFullScreen
+                      />
+                    </div>
+                  )}
+                </article>
+              </Reveal>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SiteFooter() {
+  return (
+    <footer className="border-t border-line bg-sand">
+      <div className="container-site grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-12 lg:gap-x-10">
+        <div className="lg:col-span-4">
+          <Image src={logoLockupImage} alt="Odonto Casais" className="h-14 w-auto rounded-[5px]" />
+          <p className="mt-5 max-w-[20rem] text-sm leading-relaxed text-muted">
+            Clínica odontológica com duas unidades no Centro de Teófilo Otoni/MG.
+          </p>
+        </div>
+
+        <nav aria-label="Rodapé" className="lg:col-span-2 lg:col-start-6">
+          <p className="text-[0.8125rem] text-muted">Navegação</p>
+          <ul className="mt-4 grid gap-2.5 text-sm">
+            {navItems.map((item) => (
+              <li key={item.href}>
+                <Link href={item.href} className="link-underline text-ink-soft hover:text-ink">
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="lg:col-span-3">
+          <p className="text-[0.8125rem] text-muted">Tratamentos</p>
+          <ul className="mt-4 grid gap-2.5 text-sm">
+            {allTreatmentTitles.map((title) => (
+              <li key={title}>
+                <Link href="#tratamentos" className="link-underline text-ink-soft hover:text-ink">
+                  {title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="lg:col-span-3">
+          <p className="text-[0.8125rem] text-muted">Contato</p>
+          <ul className="mt-4 grid gap-2.5 text-sm text-ink-soft">
+            <li>
+              <ExternalLink href={whatsappUrl} className="link-underline hover:text-ink">
+                WhatsApp {whatsappDisplay}
+              </ExternalLink>
+            </li>
+            {instagramProfiles.map((profile) => (
+              <li key={profile.handle}>
+                <ExternalLink href={profile.href} className="link-underline hover:text-ink">
+                  Instagram {profile.handle}
+                </ExternalLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <div className="container-site flex flex-col gap-2 border-t border-line py-6 text-[0.8125rem] text-muted sm:flex-row sm:justify-between">
+        <p>© {new Date().getFullYear()} Odonto Casais. Todos os direitos reservados.</p>
+        <p>Teófilo Otoni, Minas Gerais</p>
+      </div>
+    </footer>
+  );
+}
+
+function FloatingWhatsApp() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    // Só aparece depois do hero, para não competir com o CTA principal.
+    const onScroll = () => setVisible(window.scrollY > window.innerHeight * 0.7);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <ExternalLink
+      href={whatsappUrl}
+      className={cn(
+        "fixed bottom-4 right-4 z-40 flex h-12 items-center gap-2.5 rounded-full bg-ink pl-2 pr-2 text-sm font-medium text-paper shadow-[0_6px_20px_rgba(32,33,36,0.18)] transition-[opacity,transform,background-color] duration-300 hover:bg-slate sm:bottom-6 sm:right-6 sm:pr-5",
+        visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0",
+      )}
+    >
+      <Image src={whatsappIconImage} alt="" className="h-8 w-8 object-contain" />
+      <span className="hidden sm:inline">Agendar pelo WhatsApp</span>
+      <span className="sr-only sm:hidden">Agendar avaliação pelo WhatsApp</span>
+    </ExternalLink>
+  );
+}
+
+export default function SiteHome({ reviewsData }: { reviewsData: ReviewsResult }) {
+  return (
+    <MotionConfig reducedMotion="user">
+      <SiteHeader />
+      <main>
+        <Hero summary={reviewsData.summary} />
+        <AboutSection />
+        <TreatmentsSection />
+        <TeamSection />
+        <ReviewsSection reviewsData={reviewsData} />
+        <BookingSection />
+        <LocationsSection />
+      </main>
+      <SiteFooter />
+      <FloatingWhatsApp />
+    </MotionConfig>
   );
 }

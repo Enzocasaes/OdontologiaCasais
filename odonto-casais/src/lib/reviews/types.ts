@@ -12,6 +12,8 @@ export type ReviewsSummary = {
   averageRating: number;
   totalReviews: number;
   profileUrl: string;
+  /** true quando nota e total vieram da API do Google; false quando são dados de reserva. */
+  isLive: boolean;
 };
 
 export type ReviewsResult = {

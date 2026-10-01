@@ -1,16 +1,21 @@
 import type { ReviewsResult } from "@/lib/reviews/types";
 
 export function GoogleReviewsStructuredData({ summary, reviews }: ReviewsResult) {
+  if (!summary.isLive) return null;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Dentist",
     name: "Odonto Casais",
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: summary.averageRating,
-      reviewCount: summary.totalReviews,
-    },
-    review: reviews.slice(0, 10).map((review) => ({
+    ...(summary.totalReviews > 0 && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: summary.averageRating,
+        reviewCount: summary.totalReviews,
+      },
+    }),
+    ...(reviews.length > 0 && {
+      review: reviews.slice(0, 10).map((review) => ({
       "@type": "Review",
       author: {
         "@type": "Person",
@@ -22,7 +27,8 @@ export function GoogleReviewsStructuredData({ summary, reviews }: ReviewsResult)
         bestRating: 5,
       },
       reviewBody: review.text,
-    })),
+      })),
+    }),
   };
 
   return (

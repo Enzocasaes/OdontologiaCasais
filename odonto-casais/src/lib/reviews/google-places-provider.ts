@@ -64,6 +64,7 @@ export function createGooglePlacesProvider(): ReviewsProvider {
           averageRating: data.rating ?? 0,
           totalReviews: data.userRatingCount ?? data.reviews?.length ?? 0,
           profileUrl: data.googleMapsUri ?? "https://www.google.com/maps",
+          isLive: true,
         },
         reviews: (data.reviews ?? []).map(mapReview),
       };

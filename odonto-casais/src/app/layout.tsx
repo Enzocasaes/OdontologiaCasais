@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Poppins } from "next/font/google";
 import "./globals.css";
 
@@ -10,11 +10,15 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
 });
 
 const siteDescription =
-  "Site institucional premium da Odonto Casais, com foco em confiança, tecnologia, acolhimento e geração de novos pacientes.";
+  "Clínica odontológica com duas unidades no Centro de Teófilo Otoni/MG. Implantes, facetas e lentes de contato dental, ortodontia, prótese e endodontia. Agende sua avaliação.";
+
+export const viewport: Viewport = {
+  themeColor: "#f7f4ef",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://odontocasais.com.br"),
@@ -26,10 +30,13 @@ export const metadata: Metadata = {
   keywords: [
     "Odonto Casais",
     "consultório odontológico",
-    "odontologia premium",
+    "dentista Teófilo Otoni",
     "Teófilo Otoni",
-    "clareamento dental",
     "implantes dentários",
+    "lentes de contato dental",
+    "facetas em porcelana",
+    "ortodontia",
+    "endodontia",
   ],
   openGraph: {
     type: "website",
@@ -71,7 +78,7 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${plusJakartaSans.variable} ${poppins.variable} h-full scroll-smooth antialiased`}
     >
-      <body className="min-h-full bg-[#e1ddda] font-sans text-[#18191c] selection:bg-[#c5beba] selection:text-[#18191c]">
+      <body className="min-h-full bg-paper font-sans text-ink">
         {children}
       </body>
     </html>

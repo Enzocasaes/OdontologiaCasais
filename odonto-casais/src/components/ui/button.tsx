@@ -5,24 +5,19 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b7afaa]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#dfdddb] disabled:pointer-events-none disabled:opacity-50",
+  "group/button inline-flex items-center justify-center gap-2.5 whitespace-nowrap rounded-full text-sm font-medium tracking-[-0.005em] transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-bronze disabled:pointer-events-none disabled:opacity-50 [&_svg]:transition-transform [&_svg]:duration-300 hover:[&_svg]:translate-x-[3px]",
   {
     variants: {
       variant: {
-        default:
-          "bg-[#17181a] !text-white shadow-[0_14px_34px_rgba(23,24,26,0.16)] hover:-translate-y-0.5 hover:bg-[#242629]",
-        secondary:
-          "bg-white text-[#17181a] shadow-[0_14px_34px_rgba(23,24,26,0.08)] ring-1 ring-[#17181a]/10 hover:-translate-y-0.5 hover:bg-[#e4dfdd]",
-        outline:
-          "border border-[#17181a]/12 bg-transparent text-[#17181a] hover:-translate-y-0.5 hover:bg-white",
-        ghost: "bg-transparent text-[#17181a] hover:bg-[#17181a]/6",
-        soft: "bg-[#cfcac6] text-[#17181a] hover:-translate-y-0.5 hover:bg-[#c3bcb8]",
+        default: "bg-ink !text-paper hover:bg-slate",
+        light: "bg-paper !text-ink hover:bg-sand",
+        outline: "border border-ink/20 bg-transparent text-ink hover:border-ink/60",
+        "outline-light": "border border-paper/30 bg-transparent !text-paper hover:border-paper/70",
       },
       size: {
         default: "h-11 px-5",
-        sm: "h-9 px-4 text-xs",
-        lg: "h-12 px-7 text-base",
-        icon: "h-11 w-11",
+        sm: "h-10 px-4",
+        lg: "h-[3.25rem] px-7 text-[0.9375rem]",
       },
     },
     defaultVariants: {

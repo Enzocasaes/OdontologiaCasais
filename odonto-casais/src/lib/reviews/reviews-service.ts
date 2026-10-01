@@ -1,6 +1,12 @@
-import { fallbackReviewsResult } from "./fallback-reviews";
 import { createGooglePlacesProvider } from "./google-places-provider";
 import type { GoogleReview, ReviewsResult } from "./types";
+
+// Sem dados do Google, o site não mostra nota nem avaliações — nunca exibimos textos
+// que não vieram da API.
+const emptyResult: ReviewsResult = {
+  summary: { averageRating: 0, totalReviews: 0, profileUrl: "", isLive: false },
+  reviews: [],
+};
 
 function sortReviews(reviews: GoogleReview[]): GoogleReview[] {
   return [...reviews].sort((a, b) => {
@@ -10,26 +16,20 @@ function sortReviews(reviews: GoogleReview[]): GoogleReview[] {
   });
 }
 
-function fallbackResult(reason: string) {
-  console.warn(`[google-reviews] ${reason} Usando dados de reserva até a integração com o Google ser configurada.`);
-  return { summary: fallbackReviewsResult.summary, reviews: sortReviews(fallbackReviewsResult.reviews) };
-}
-
 export async function getGoogleReviews(): Promise<ReviewsResult> {
   const provider = createGooglePlacesProvider();
 
   try {
     const result = await provider.getReviews();
     if (!result) {
-      return fallbackResult("GOOGLE_PLACES_API_KEY/GOOGLE_PLACE_ID não configurados.");
+      console.warn("[google-reviews] GOOGLE_PLACES_API_KEY/GOOGLE_PLACE_ID não configurados.");
+      return emptyResult;
     }
-    // A nota e o total de avaliações são reais assim que a API responde, mesmo que o
-    // Google não devolva o texto de nenhuma avaliação individual para este local.
-    if (result.reviews.length === 0) {
-      return { summary: result.summary, reviews: sortReviews(fallbackReviewsResult.reviews) };
-    }
-    return { summary: result.summary, reviews: sortReviews(result.reviews) };
+    // O Google pode devolver a nota e o total sem o texto de nenhuma avaliação;
+    // nesse caso a seção mostra só a nota e o link para o perfil.
+    return { summary: result.summary, reviews: sortReviews(result.reviews.filter((review) => review.text.trim())) };
   } catch (error) {
-    return fallbackResult(`Falha ao buscar avaliações reais: ${error instanceof Error ? error.message : String(error)}`);
+    console.warn(`[google-reviews] Falha ao buscar avaliações: ${error instanceof Error ? error.message : String(error)}`);
+    return emptyResult;
   }
 }
