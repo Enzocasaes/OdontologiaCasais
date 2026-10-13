@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Poppins } from "next/font/google";
 import "./globals.css";
 
+import { clinicName, siteUrl } from "@/lib/site";
+
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
   subsets: ["latin"],
@@ -13,56 +15,20 @@ const poppins = Poppins({
   weight: ["400", "500", "600"],
 });
 
-const siteDescription =
-  "Clínica odontológica com duas unidades no Centro de Teófilo Otoni/MG. Implantes, facetas e lentes de contato dental, ortodontia, prótese e endodontia. Agende sua avaliação.";
-
 export const viewport: Viewport = {
   themeColor: "#f7f4ef",
 };
 
+// Padrões do site. Título, descrição, canonical e Open Graph ficam em cada página
+// (via buildPageMetadata), para não herdar o canonical da home por engano.
 export const metadata: Metadata = {
-  metadataBase: new URL("https://odontocasais.com.br"),
+  metadataBase: new URL(siteUrl),
   title: {
-    default: "Odonto Casais | Sorrisos saudáveis começam com confiança",
-    template: "%s | Odonto Casais",
+    default: `Clínica Odontológica em Teófilo Otoni | ${clinicName}`,
+    template: `%s | ${clinicName}`,
   },
-  description: siteDescription,
-  keywords: [
-    "Odonto Casais",
-    "consultório odontológico",
-    "dentista Teófilo Otoni",
-    "Teófilo Otoni",
-    "implantes dentários",
-    "lentes de contato dental",
-    "facetas em porcelana",
-    "ortodontia",
-    "endodontia",
-  ],
-  openGraph: {
-    type: "website",
-    locale: "pt_BR",
-    url: "/",
-    siteName: "Odonto Casais",
-    title: "Odonto Casais | Sorrisos saudáveis começam com confiança",
-    description: siteDescription,
-    images: [
-      {
-        url: "/og-image.svg",
-        width: 1200,
-        height: 630,
-        alt: "Odonto Casais",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Odonto Casais | Sorrisos saudáveis começam com confiança",
-    description: siteDescription,
-    images: ["/og-image.svg"],
-  },
-  alternates: {
-    canonical: "/",
-  },
+  applicationName: clinicName,
+  formatDetection: { telephone: false },
   icons: {
     icon: "/icon.svg",
   },

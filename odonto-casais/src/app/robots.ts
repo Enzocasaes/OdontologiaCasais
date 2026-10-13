@@ -1,12 +1,14 @@
 import type { MetadataRoute } from "next";
 
+import { siteUrl } from "@/lib/site";
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
       allow: "/",
+      disallow: "/api/",
     },
-    sitemap: "https://odontocasais.com.br/sitemap.xml",
-    host: "https://odontocasais.com.br",
+    sitemap: `${siteUrl}/sitemap.xml`,
   };
 }
