@@ -3,15 +3,21 @@
  * Mantenha tudo aqui para que as informações fiquem iguais em todas as páginas.
  */
 
+/*
+ * Domínio canônico (com www, que é para onde a Vercel redireciona o domínio sem www).
+ * Não usar VERCEL_PROJECT_PRODUCTION_URL: a Vercel escolhe o domínio mais curto, que
+ * seria o sem www, e o canonical passaria a apontar para uma URL que redireciona.
+ */
 function resolveSiteUrl() {
   const explicit = process.env.NEXT_PUBLIC_SITE_URL;
   if (explicit) return explicit.replace(/\/$/, "");
-  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL;
-  if (vercel) return `https://${vercel}`;
-  return "https://odontocasais.com.br";
+  return "https://www.clinicaodontocasais.com.br";
 }
 
 export const siteUrl = resolveSiteUrl();
+
+// Data da última mudança relevante no conteúdo da home (vai para o sitemap). Atualize à mão.
+export const homeUpdatedAt = "2026-11-02";
 
 export const clinicName = "Odonto Casais";
 
@@ -31,16 +37,32 @@ export const openingHours = [
   { days: "Sábado", hours: "08h às 12h", dayOfWeek: ["Saturday"], opens: "08:00", closes: "12:00" },
 ] as const;
 
-export const clinicLocations = [
-  { slug: "unidade-centro", name: "Unidade Centro", street: "Rua Minervino de Castro Pinto, 80", district: "Centro, Teófilo Otoni/MG" },
-  { slug: "unidade-getulio-vargas", name: "Unidade Getúlio Vargas", street: "Av. Getúlio Vargas, 1200", district: "Centro, Teófilo Otoni/MG" },
-] as const;
+export type ClinicLocation = {
+  slug: string;
+  name: string;
+  street: string;
+  district: string;
+  /*
+   * CEP e coordenadas entram no JSON-LD só quando preenchidos. Use exatamente os mesmos
+   * dados do perfil da unidade no Google Meu Negócio (coordenadas: clique com o botão
+   * direito no pino do Google Maps e copie os números).
+   */
+  postalCode?: string;
+  geo?: { latitude: number; longitude: number };
+};
 
-export type ClinicLocation = (typeof clinicLocations)[number];
+export const clinicLocations: readonly ClinicLocation[] = [
+  { slug: "unidade-centro", name: "Unidade Centro", street: "Rua Minervino de Castro Pinto, 80", district: "Centro, Teófilo Otoni/MG", postalCode: "39800-091" },
+  { slug: "unidade-getulio-vargas", name: "Unidade Getúlio Vargas", street: "Av. Getúlio Vargas, 1200", district: "Centro, Teófilo Otoni/MG", postalCode: "39800-015" },
+];
 
 // Formato que o Google Maps reconhece ("Rua, número, Bairro, Cidade - UF").
 export function getFullAddress(location: ClinicLocation) {
   return `${location.street}, ${location.district.replace("/", " - ")}`;
+}
+
+export function getMapUrl(address: string) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 }
 
 export function getDirectionsUrl(address: string) {

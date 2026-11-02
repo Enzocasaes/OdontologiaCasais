@@ -6,7 +6,7 @@ import { buildPageMetadata } from "@/lib/seo";
 export const metadata = buildPageMetadata({
   title: "Clínica Odontológica em Teófilo Otoni | Odonto Casais",
   description:
-    "Conheça a Odonto Casais, clínica odontológica no Centro de Teófilo Otoni, MG. Implantes, lentes de contato dental, ortodontia e canal. Agende sua avaliação.",
+    "Dentistas em Teófilo Otoni, MG: duas unidades no Centro, com implantes, lentes de contato dental, ortodontia, canal e próteses. Agende sua avaliação.",
   path: "/",
 });
 
