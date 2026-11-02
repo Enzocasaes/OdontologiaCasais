@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 
 import { Eyebrow, ExternalLink, FloatingWhatsApp, SiteFooter, SiteHeader } from "@/components/site-chrome";
-import { JsonLd, getBreadcrumbJsonLd } from "@/components/structured-data";
+import { JsonLd, getBreadcrumbJsonLd, getTreatmentJsonLd } from "@/components/structured-data";
 import { Button } from "@/components/ui/button";
 import tratamentoAntesImage from "@/images/tratamentoAntes.jpeg";
 import tratamentoDepoisImage from "@/images/tratamentoDepois.jpeg";
@@ -95,6 +95,7 @@ export default async function TreatmentPage({ params }: { params: Promise<{ slug
           { name: treatment.name, path: getTreatmentPath(treatment.slug) },
         ])}
       />
+      <JsonLd data={getTreatmentJsonLd(treatment)} />
       <SiteHeader />
       <main className="pt-[4.5rem] md:pt-20">
         <section className="container-site pb-16 pt-8 md:pb-20 md:pt-12">

@@ -10,10 +10,7 @@ import { Eyebrow, ExternalLink, FloatingWhatsApp, SiteFooter, SiteHeader } from 
 import { Button } from "@/components/ui/button";
 import { GoogleLogo } from "@/components/google-reviews/google-logo";
 import { GoogleReviewCard, StarRow } from "@/components/google-reviews/review-card";
-import draIanaImage from "@/images/DraIana.jpg";
-import drChristianImage from "@/images/DrChristian.jpg";
 import fachadaImage from "@/images/fachada.png";
-import drDeivsonImage from "@/images/DrDeivson.jpeg";
 import secaoDentesFixosImage from "@/images/secaodentesfixos.png";
 import tratamentoAntesImage from "@/images/tratamentoAntes.jpeg";
 import tratamentoDepoisImage from "@/images/tratamentoDepois.jpeg";
@@ -30,6 +27,7 @@ import {
   whatsappQuestionUrl,
   whatsappUrl,
 } from "@/lib/site";
+import { team, type TeamMember } from "@/lib/team";
 import { getTreatmentPath, treatments } from "@/lib/treatments";
 import { cn } from "@/lib/utils";
 
@@ -82,38 +80,6 @@ const clinicFigures = [
   { value: "5+", label: "anos de experiência" },
 ] as const;
 
-const team = [
-  {
-    name: "Dra. Iana Guedes",
-    role: "Dentística, Prótese e Ortodontia",
-    cro: "CRO-MG 58340",
-    summary: "Pós-graduada em Dentística e em Prótese Dentária, especializando em Ortodontia. Cuida da estética e da função do sorriso.",
-    bio: "Tenho a convicção de que a odontologia vai muito além de tratar dentes: ela tem o poder de transformar vidas. Ao longo da minha trajetória, busco constantemente novos conhecimentos para oferecer tratamentos de excelência, sempre aliados a um atendimento humanizado. Acredito que cada paciente é único e merece ser acolhido com carinho, atenção e respeito. Meu propósito é cuidar de pessoas, devolver confiança, promover saúde e proporcionar sorrisos que reflitam felicidade e bem-estar.",
-    image: draIanaImage,
-    position: "50% 22%",
-  },
-  {
-    name: "Dr. Christian Freitas",
-    role: "Endodontia e Radiologia",
-    cro: "CRO-MG 62584",
-    summary: "Especialista em Endodontia e pós-graduando em Radiologia Odontológica. Formado pela UFJF-GV, associado à SBPqO e à IADR.",
-    bio: "Sou cirurgião-dentista graduado pela Universidade Federal de Juiz de Fora – Campus Governador Valadares (UFJF-GV), especialista em Endodontia, capacitado em Blindagem de Dentes Tratados Endodonticamente e, atualmente, pós-graduando em Radiologia Odontológica. Minha atuação é voltada à preservação dos dentes naturais por meio de diagnósticos precisos e tratamentos endodônticos realizados com técnicas modernas. Acredito que cada paciente merece um atendimento humanizado, transparente e individualizado.",
-    image: drChristianImage,
-    position: "50% 18%",
-  },
-  {
-    name: "Dr. Deivson Norte",
-    role: "Implantodontia",
-    cro: "CRO-MG 78629",
-    summary: "Cirurgião-dentista com imersão em Implantodontia. Traz da carreira na Polícia Militar a disciplina e o compromisso de servir.",
-    bio: "Há histórias que não mudam de propósito, apenas de missão. A minha começou vestindo uma farda da Polícia Militar, onde aprendi que servir ao próximo exige coragem, disciplina e compromisso. Com o passar do tempo, nasceu uma nova paixão: a Odontologia. Descobri que também era possível transformar vidas por meio de um sorriso, aliviar dores, devolver autoestima e cuidar das pessoas de uma forma diferente, mas igualmente importante.",
-    image: drDeivsonImage,
-    position: "50% 15%",
-  },
-] as const;
-
-type TeamMember = (typeof team)[number];
-
 const featuredTreatments = [
   {
     id: "facetas-e-lentes",
@@ -145,6 +111,16 @@ const otherTreatments = [
     title: "Endodontia",
     slug: "endodontia",
     description: "Tratamento de canal com técnica precisa para aliviar a dor e preservar o dente natural.",
+  },
+  {
+    title: "Prótese dentária",
+    slug: "protese-dentaria",
+    description: "Coroas, pontes, próteses removíveis e dentaduras para repor dentes perdidos ou muito desgastados.",
+  },
+  {
+    title: "Restaurações e dentística",
+    slug: "restauracoes-e-dentistica",
+    description: "Restaurações em resina na cor do dente para tratar cáries, fraturas e desgastes.",
   },
 ] as const;
 
@@ -266,12 +242,8 @@ function Hero({ summary }: { summary: ReviewsResult["summary"] }) {
   return (
     <section id="inicio" className="pt-[4.5rem] md:pt-20">
       <div className="container-site grid gap-10 pb-16 pt-8 md:pb-20 md:pt-12 lg:grid-cols-12 lg:items-end lg:gap-x-10 lg:pb-24 lg:pt-10">
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="lg:col-span-6 lg:pb-2"
-        >
+        {/* Sem animação de entrada: título e foto são o LCP da página e precisam aparecer já no HTML. */}
+        <div className="lg:col-span-6 lg:pb-2">
           <h1>
             <Eyebrow as="span">Clínica odontológica em Teófilo Otoni, MG</Eyebrow>
             <span className="mt-6 block max-w-[11em] font-heading text-[clamp(2.5rem,4.6vw,4rem)] font-medium leading-[1.04] tracking-[-0.035em] text-ink">
@@ -302,14 +274,9 @@ function Hero({ summary }: { summary: ReviewsResult["summary"] }) {
               </div>
             ))}
           </dl>
-        </motion.div>
+        </div>
 
-        <motion.figure
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
-          className="group lg:col-span-6 lg:col-start-7 lg:self-center"
-        >
+        <figure className="group lg:col-span-6 lg:col-start-7 lg:self-center">
           <Photo
             src={photos.hero.src}
             alt={photos.hero.alt}
@@ -318,7 +285,7 @@ function Hero({ summary }: { summary: ReviewsResult["summary"] }) {
             sizes="(min-width: 1024px) 50vw, 100vw"
             className="aspect-[4/3]"
           />
-        </motion.figure>
+        </figure>
       </div>
     </section>
   );
@@ -865,7 +832,7 @@ function LocationsSection() {
             const address = getFullAddress(location);
             return (
               <Reveal key={location.name} delay={index * 0.08}>
-                <article className="border-t border-ink pt-6">
+                <article id={location.slug} className="scroll-mt-28 border-t border-ink pt-6">
                   <p className="text-[0.8125rem] text-muted">Unidade {String(index + 1).padStart(2, "0")}</p>
                   <h3 className="mt-2 font-heading text-[1.75rem] font-medium tracking-[-0.02em] text-ink md:text-[2rem]">{location.name}</h3>
 

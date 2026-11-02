@@ -28,7 +28,17 @@ export const metadata: Metadata = {
     template: `%s | ${clinicName}`,
   },
   applicationName: clinicName,
+  // Permite miniaturas grandes e trechos completos no Google (o 404 sobrescreve com noindex).
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
+  },
   formatDetection: { telephone: false },
+  // Código da verificação por meta tag do Google Search Console (dispensável se o domínio foi verificado por DNS).
+  ...(process.env.GOOGLE_SITE_VERIFICATION && {
+    verification: { google: process.env.GOOGLE_SITE_VERIFICATION },
+  }),
   icons: {
     icon: "/icon.svg",
   },

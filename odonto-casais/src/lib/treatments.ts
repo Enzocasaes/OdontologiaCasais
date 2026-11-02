@@ -24,6 +24,8 @@ export type Treatment = {
   sections: readonly TreatmentSection[];
   faq: readonly { question: string; answer: string }[];
   whatsappMessage: string;
+  /** Data da última mudança no conteúdo (AAAA-MM-DD), usada no sitemap. */
+  updatedAt: string;
 };
 
 export const treatments: readonly Treatment[] = [
@@ -102,12 +104,13 @@ export const treatments: readonly Treatment[] = [
       },
     ],
     whatsappMessage: "Olá, gostaria de agendar uma avaliação para implante dentário na Odonto Casais.",
+    updatedAt: "2026-10-13",
   },
   {
     slug: "facetas-e-lentes-de-contato-dental",
     name: "Facetas e lentes de contato dental",
     heading: "Facetas e lentes de contato dental em Teófilo Otoni",
-    seoTitle: "Lentes de Contato Dental em Teófilo Otoni | Odonto Casais",
+    seoTitle: "Facetas e Lentes de Contato em Teófilo Otoni | Odonto Casais",
     description:
       "Facetas em porcelana e lentes de contato dental em Teófilo Otoni, MG, para corrigir cor, formato e alinhamento dos dentes. Agende sua avaliação.",
     intro:
@@ -163,6 +166,7 @@ export const treatments: readonly Treatment[] = [
       },
     ],
     whatsappMessage: "Olá, gostaria de saber mais sobre facetas e lentes de contato dental na Odonto Casais.",
+    updatedAt: "2026-10-13",
   },
   {
     slug: "ortodontia",
@@ -212,6 +216,7 @@ export const treatments: readonly Treatment[] = [
       },
     ],
     whatsappMessage: "Olá, gostaria de saber mais sobre ortodontia na Odonto Casais.",
+    updatedAt: "2026-10-13",
   },
   {
     slug: "endodontia",
@@ -263,6 +268,131 @@ export const treatments: readonly Treatment[] = [
       },
     ],
     whatsappMessage: "Olá, gostaria de saber mais sobre tratamento de canal na Odonto Casais.",
+    updatedAt: "2026-10-13",
+  },
+  {
+    slug: "protese-dentaria",
+    name: "Prótese dentária",
+    heading: "Prótese dentária em Teófilo Otoni",
+    seoTitle: "Prótese Dentária em Teófilo Otoni | Odonto Casais",
+    description:
+      "Prótese dentária em Teófilo Otoni, MG: coroas, pontes, próteses removíveis e dentaduras para repor dentes perdidos ou desgastados. Agende sua avaliação.",
+    intro:
+      "A prótese repõe dentes perdidos ou muito desgastados para devolver a mastigação, a fala e a estética do sorriso. O tipo de prótese é escolhido na avaliação, de acordo com cada caso.",
+    sections: [
+      {
+        heading: "Tipos de prótese",
+        items: [
+          "Coroa: cobre e protege um dente muito destruído ou tratado com canal",
+          "Ponte fixa: repõe um ou mais dentes usando os dentes vizinhos como apoio",
+          "Prótese parcial removível: repõe vários dentes e pode ser retirada para limpeza",
+          "Prótese total (dentadura): repõe todos os dentes de uma arcada",
+          "Prótese sobre implantes: fixada em implantes, sem depender dos dentes vizinhos",
+        ],
+        paragraphs: [
+          "Cada opção tem vantagens e limitações. O dentista explica as alternativas possíveis para o seu caso antes de começar.",
+        ],
+      },
+      {
+        heading: "Quando pode ser indicada",
+        items: [
+          "Falta de um ou de vários dentes",
+          "Dentes muito desgastados, fraturados ou destruídos por cárie",
+          "Dente tratado com canal que precisa de proteção",
+          "Dentadura antiga que machuca, ficou frouxa ou precisa ser refeita",
+        ],
+      },
+      {
+        heading: "Como funciona o tratamento",
+        items: [
+          "Avaliação clínica e exames de imagem, quando necessários",
+          "Planejamento e escolha do tipo de prótese e do material",
+          "Preparo dos dentes e moldagem",
+          "Provas para ajustar cor, formato e encaixe",
+          "Instalação e consultas de ajuste",
+        ],
+      },
+    ],
+    faq: [
+      {
+        question: "Qual é a melhor prótese para mim?",
+        answer:
+          "Depende de quantos dentes faltam, das condições dos dentes que restaram, da gengiva e do osso. As opções possíveis são apresentadas na avaliação, para você decidir junto com o dentista.",
+      },
+      {
+        question: "Prótese fixa ou removível?",
+        answer:
+          "A fixa fica presa nos dentes ou em implantes e não é retirada em casa; a removível é retirada para limpeza. A indicação depende do caso e é discutida na avaliação.",
+      },
+      {
+        question: "Quanto tempo dura uma prótese?",
+        answer:
+          "Varia conforme o tipo, o material, a higiene e os hábitos de cada pessoa. Consultas de revisão ajudam a identificar ajustes ou trocas necessárias.",
+      },
+      {
+        question: "Quanto custa?",
+        answer: "Depende do tipo de prótese, do material e do número de dentes. O orçamento é passado depois da avaliação.",
+      },
+    ],
+    whatsappMessage: "Olá, gostaria de saber mais sobre prótese dentária na Odonto Casais.",
+    updatedAt: "2026-11-02",
+  },
+  {
+    slug: "restauracoes-e-dentistica",
+    name: "Restaurações e dentística",
+    heading: "Restaurações e dentística em Teófilo Otoni",
+    seoTitle: "Restauração Dentária em Teófilo Otoni | Odonto Casais",
+    description:
+      "Restaurações estéticas em resina em Teófilo Otoni, MG, para tratar cáries, fraturas e desgastes preservando o dente natural. Agende sua avaliação.",
+    intro:
+      "A dentística cuida da recuperação dos dentes com o mínimo de desgaste possível: trata cáries, fraturas e desgastes e devolve forma e cor naturais ao sorriso.",
+    sections: [
+      {
+        heading: "O que a dentística trata",
+        items: [
+          "Cáries",
+          "Dentes lascados ou fraturados",
+          "Desgastes e sensibilidade causados por escovação forte ou apertamento",
+          "Restaurações antigas, escurecidas ou com infiltração",
+          "Pequenas correções de formato e de espaços entre os dentes",
+        ],
+      },
+      {
+        heading: "Restaurações em resina",
+        paragraphs: [
+          "A resina composta é escolhida na cor do dente e aplicada em camadas, o que permite restaurar com aparência natural e preservar o máximo de estrutura dental.",
+          "Quando o dente está muito destruído, a restauração pode não ser suficiente, e o dentista avalia outras opções, como uma coroa.",
+        ],
+      },
+      {
+        heading: "Como funciona",
+        items: [
+          "Avaliação clínica e, se necessário, radiografia",
+          "Remoção da cárie ou da restauração antiga, com anestesia local quando indicado",
+          "Restauração com resina na cor do dente",
+          "Ajuste da mordida e acabamento",
+        ],
+      },
+    ],
+    faq: [
+      {
+        question: "Restauração dói?",
+        answer:
+          "Quando é preciso remover cárie mais profunda, o procedimento é feito com anestesia local. Restaurações pequenas muitas vezes nem precisam de anestesia.",
+      },
+      {
+        question: "Dá para trocar restaurações antigas e escuras?",
+        answer:
+          "Sim, quando há indicação. Restaurações com infiltração, manchas ou desgaste podem ser substituídas por resina na cor do dente. O dentista avalia se a troca é necessária.",
+      },
+      {
+        question: "Quanto tempo dura uma restauração?",
+        answer:
+          "Depende do tamanho da restauração, da higiene, da alimentação e de hábitos como o apertamento dos dentes. Consultas de revisão ajudam a identificar desgastes cedo.",
+      },
+    ],
+    whatsappMessage: "Olá, gostaria de agendar uma avaliação para restauração na Odonto Casais.",
+    updatedAt: "2026-11-02",
   },
 ];
 

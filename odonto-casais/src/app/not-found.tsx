@@ -6,9 +6,11 @@ import { Eyebrow, SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { Button } from "@/components/ui/button";
 import { getTreatmentPath, treatments } from "@/lib/treatments";
 
-// O Next já adiciona <meta name="robots" content="noindex"> nas respostas 404.
+// O Next já adiciona <meta name="robots" content="noindex"> nas respostas 404;
+// `robots: null` só descarta o "index, follow" herdado do layout.
 export const metadata: Metadata = {
   title: "Página não encontrada",
+  robots: null,
 };
 
 export default function NotFound() {
